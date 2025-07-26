@@ -1,40 +1,215 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PT. Gurita Bisnis Undagi - Website Katalog & Layanan
 
-## Getting Started
+Website resmi PT. Gurita Bisnis Undagi yang bergerak di bidang layanan jasa konstruksi dan pengadaan peralatan dapur industri. Website ini menyediakan katalog lengkap peralatan dapur industri dan informasi layanan konstruksi dapur sehat MBG.
 
-First, run the development server:
+## 🏢 Tentang Perusahaan
 
+PT. Gurita Bisnis Undagi adalah perusahaan yang bergerak di bidang:
+- **Jasa Konstruksi Dapur Industri** - Pembangunan dan renovasi dapur untuk industri makanan
+- **Pengadaan Peralatan Dapur** - Supplier peralatan dapur industri dan komersial lengkap
+- **Instalasi Utilitas** - Instalasi listrik, gas, air, dan ventilasi untuk dapur industri
+- **Pendampingan Sertifikasi SLHS** - Bantuan mendapatkan Sertifikat Laik Higiene dan Sanitasi
+
+### Keunggulan Kami:
+✅ Berpengalaman dalam proyek dapur sehat skala besar  
+✅ Jaminan mutu pekerjaan terpercaya  
+✅ Waktu pelaksanaan yang terukur dan tepat waktu  
+✅ Layanan purna jual yang responsif  
+✅ Tim ahli berpengalaman di bidang konstruksi dapur industri  
+
+## 🚀 Fitur Website
+
+### Untuk Pengunjung:
+- **Katalog Peralatan Dapur** - Browsing dan pencarian peralatan dapur industri
+- **Banner Layanan** - Informasi layanan konstruksi dan renovasi dapur
+- **Keranjang Belanja** - Sistem keranjang untuk inquiry produk
+- **WhatsApp Integration** - Kontak langsung via WhatsApp floating button
+- **Responsive Design** - Optimized untuk desktop dan mobile
+
+### Untuk Admin (Dashboard):
+- **Manajemen Katalog** - CRUD operations untuk produk katalog
+- **Manajemen Banner** - CRUD operations untuk banner layanan
+- **Bulk Operations** - Import/export data katalog
+- **Media Management** - Upload dan manajemen gambar produk
+
+## 🛠 Teknologi yang Digunakan
+
+- **Framework**: Next.js 15.4.4 (App Router)
+- **UI Library**: React 19.1.0
+- **Styling**: Tailwind CSS 4.0
+- **Database**: PostgreSQL dengan Prisma ORM
+- **Components**: Radix UI + Custom Components
+- **Icons**: Lucide React + Tabler Icons
+- **Image Optimization**: Next.js Image dengan AVIF/WebP
+- **SEO**: Structured Data (JSON-LD), Meta Tags, Sitemap
+
+## 📱 SEO & Performance
+
+Website ini telah dioptimasi untuk SEO dengan:
+- **Structured Data** - Schema.org markup untuk Organization, LocalBusiness, Product, Service
+- **Meta Tags** - Comprehensive meta tags untuk setiap halaman
+- **Sitemap.xml** - Automated sitemap generation
+- **Robots.txt** - Search engine crawling guidelines
+- **Open Graph** - Social media sharing optimization
+- **Performance** - Image optimization, code splitting, compression
+
+### Target Keywords:
+- Jasa konstruksi dapur industri
+- Renovasi dapur sehat MBG
+- Peralatan dapur industri
+- Kitchen equipment supplier Indonesia
+- Sertifikasi SLHS
+- Instalasi utilitas dapur
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- PostgreSQL database
+- Git
+
+### Installation
+
+1. **Clone repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/aryacaesars/undagi-katalog.git
+cd undagi-katalog
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. **Setup environment variables**
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit `.env.local` dengan konfigurasi database:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/undagi_katalog"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_GA_ID="your-google-analytics-id"
+```
 
-## Learn More
+4. **Setup database**
+```bash
+# Generate Prisma client
+npm run db:generate
 
-To learn more about Next.js, take a look at the following resources:
+# Run migrations
+npm run db:migrate
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Seed initial data
+npm run db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Run development server**
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+Website akan tersedia di [http://localhost:3000](http://localhost:3000)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📊 Database Schema
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# undagi-katalog
->>>>>>> 297243acdc02eee5868237c7a3da2da4dcedf267
+### Tables:
+- **Banner** - Layanan konstruksi dan renovasi
+  - id, title, subtitle, description, image, price, rating, features, badge, isActive
+- **Catalogue** - Produk peralatan dapur
+  - id, namaBarang, jenis, deskripsi, harga, gambar, stok
+
+### API Endpoints:
+- `GET/POST /api/banners` - Banner management
+- `GET/PUT/DELETE /api/banners/[id]` - Individual banner
+- `GET/POST /api/catalogues` - Catalogue management  
+- `GET/PUT/DELETE /api/catalogues/[id]` - Individual product
+- `POST /api/catalogues/bulk` - Bulk operations
+
+## 🎯 SEO Strategy
+
+### On-Page SEO:
+- Optimized title tags and meta descriptions
+- Structured data markup (JSON-LD)
+- Header tag hierarchy (H1, H2, H3)  
+- Internal linking structure
+- Image alt text optimization
+- URL structure optimization
+
+### Technical SEO:
+- Core Web Vitals optimization
+- Mobile-first responsive design
+- Page speed optimization
+- XML sitemap
+- Robots.txt configuration
+- Canonical URLs
+- Open Graph and Twitter Card tags
+
+### Content Strategy:
+- Industry-focused keywords
+- Local SEO for Indonesian market
+- Service-based content optimization
+- Product catalog SEO
+- Business information structured data
+
+## 📈 Analytics & Tracking
+
+- Google Analytics 4 integration
+- User behavior tracking
+- Conversion tracking
+- Form submission tracking
+- WhatsApp click tracking
+- Scroll depth monitoring
+- Session duration analysis
+
+## 🚀 Deployment
+
+### Production Build:
+```bash
+npm run build
+npm start
+```
+
+### Environment Setup:
+- Set production DATABASE_URL
+- Configure Google Analytics ID
+- Set up domain-specific environment variables
+- Enable HTTPS and security headers
+
+### Recommended Hosting:
+- **Vercel** (Recommended) - Automatic deployments dari Git
+- **Netlify** - JAMstack optimized hosting  
+- **Railway** - Full-stack dengan database
+- **DigitalOcean** - VPS dengan custom configuration
+
+## 📞 Kontak & Layanan
+
+Untuk informasi lebih lanjut mengenai layanan konstruksi dapur industri:
+
+- **Website**: [undagi-katalog.vercel.app](https://undagi-katalog.vercel.app)
+- **Email**: Tersedia melalui website
+- **WhatsApp**: Floating button di website
+- **Layanan**: Konstruksi, Renovasi, Pengadaan Peralatan, Sertifikasi SLHS
+
+---
+
+## 🤝 Contributing
+
+Kontribusi untuk pengembangan website ini sangat diterima. Silakan:
+
+1. Fork repository
+2. Buat feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit perubahan (`git commit -m 'Add amazing feature'`)
+4. Push ke branch (`git push origin feature/amazing-feature`)
+5. Buka Pull Request
+
+## 📄 License
+
+Website ini dikembangkan untuk PT. Gurita Bisnis Undagi. All rights reserved.
+
+---
+
+**PT. Gurita Bisnis Undagi**  
+*Spesialis Jasa Konstruksi & Peralatan Dapur Industri*

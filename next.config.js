@@ -76,11 +76,15 @@ const nextConfig = {
     if (!dev && !isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
+        '@': require('path').resolve(__dirname),
       }
     }
     
     return config
   },
+  
+  // Output configuration
+  output: 'standalone',
   
   // Compiler options
   compiler: {
@@ -88,4 +92,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig;
+module.exports = nextConfig
