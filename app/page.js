@@ -26,7 +26,7 @@ export const metadata = {
     images: ["/Logo.svg"],
   },
   alternates: {
-    canonical: "https://undagi-katalog.vercel.app",
+    canonical: "https://katalog.undagicorp.com",
   },
 };
 

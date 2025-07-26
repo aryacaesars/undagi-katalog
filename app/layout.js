@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://katalog.undagicorp,com'),
+  metadataBase: new URL('https://katalog.undagicorp.com'),
   title: "UNDAGI | KATALOG",
   description: "PT. Gurita Bisnis Undagi menyediakan layanan jasa konstruksi, renovasi dapur sehat, pengadaan peralatan dapur industri, instalasi utilitas, dan pendampingan sertifikasi SLHS. Berpengalaman dalam proyek dapur sehat skala besar dengan jaminan mutu.",
   keywords: [
@@ -60,7 +60,7 @@ export default function RootLayout({ children }) {
     <html lang="id">
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <link rel="canonical" href="https://katalog.undagicorp,com" />
+        <link rel="canonical" href="https://katalog.undagicorp.com" />
         <meta name="geo.region" content="ID" />
         <meta name="geo.country" content="Indonesia" />
         <meta name="DC.language" content="id" />
@@ -84,8 +84,8 @@ export default function RootLayout({ children }) {
               "@type": "Organization",
               "name": "PT. Gurita Bisnis Undagi",
               "description": "Layanan jasa konstruksi dan pengadaan peralatan dapur industri",
-              "url": "https://katalog.undagicorp,com",
-              "logo": "https://katalog.undagicorp,com/Logo.svg",
+              "url": "https://katalog.undagicorp.com",
+              "logo": "https://katalog.undagicorp.com/Logo.svg",
               "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "Customer Service",
@@ -131,7 +131,7 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
               "name": "PT. Gurita Bisnis Undagi",
-              "image": "https://katalog.undagicorp,com/Logo.svg",
+              "image": "https://katalog.undagicorp.com/Logo.svg",
               "description": "Spesialis jasa konstruksi dapur industri, renovasi dapur sehat, dan pengadaan peralatan dapur komersial dengan sertifikasi SLHS",
               "address": {
                 "@type": "PostalAddress",
@@ -140,7 +140,7 @@ export default function RootLayout({ children }) {
               "geo": {
                 "@type": "GeoCoordinates"
               },
-              "url": "https://katalog.undagicorp,com",
+              "url": "https://katalog.undagicorp.com",
               "telephone": "+62",
               "priceRange": "$$",
               "openingHoursSpecification": {

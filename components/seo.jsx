@@ -111,7 +111,7 @@ export function SEOHead({
   ogImage,
   noIndex = false 
 }) {
-  const fullTitle = title ? `${title} | PT. Gurita Bisnis Undagi` : 'PT. Gurita Bisnis Undagi - Jasa Konstruksi Dapur Industri'
+  const fullTitle = title ? `${title} | UNDAGI` : 'UNDAGI | KATALOG'
   
   return (
     <Head>

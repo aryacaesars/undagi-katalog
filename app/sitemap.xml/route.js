@@ -1,5 +1,5 @@
 export async function GET() {
-  const baseUrl = 'https://katalog.undagicorp,com'
+  const baseUrl = 'https://katalog.undagicorp.com'
   
   // Static pages
   const staticPages = [
