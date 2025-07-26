@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model untuk Banner/Hero Section
+model Banner {
+  id          Int       @id @default(autoincrement())
+  title       String
+  subtitle    String?
+  description String?
+  image       String?
+  price       String?
+  rating      Float?
+  features    String[]  // Array of strings untuk fitur
+  badge       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("banners")
+}
+
+// Model untuk Katalog Produk
+model Catalogue {
+  id           Int         @id @default(autoincrement())
+  jenis        String      // Kategori produk (Elektronik, Furniture, ATK, dll)
+  namaBarang   String      // Nama produk
+  spesifikasi  String?     // Deskripsi/spesifikasi produk
+  qty          Int         @default(0) // Quantity/jumlah stok
+  satuan       String      // Unit (Unit, Pcs, Rim, dll)
+  hargaSatuan  Float       @default(0) // Harga per unit
+  jumlah       Float       @default(0) // Total nilai (qty * hargaSatuan)
+  foto         String?     // URL foto produk
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relasi balik
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  @@map("catalogues")
+}
+
+// Model untuk User/Admin Management (opsional untuk future development)
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String?
+  password  String    // Hash password
+  role      UserRole  @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relasi balik
+  carts     Cart[]
+  orders    Order[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Model untuk Keranjang/Cart (untuk fitur keranjang yang sudah ada)
+model Cart {
+  id           Int         @id @default(autoincrement())
+  sessionId    String?     // Session ID untuk guest users
+  userId       Int?        // User ID untuk logged in users
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  items        CartItem[]
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("carts")
+}
+
+model CartItem {
+  id          Int       @id @default(autoincrement())
+  cartId      Int
+  catalogueId Int
+  quantity    Int       @default(1)
+  price       Float     // Harga saat item ditambahkan ke cart
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  cart      Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, catalogueId]) // Prevent duplicate items in same cart
+  @@map("cart_items")
+}
+
+// Model untuk Order/Pemesanan (untuk future development)
+model Order {
+  id           Int         @id @default(autoincrement())
+  orderNumber  String      @unique
+  userId       Int?
+  customerName String
+  customerEmail String?
+  customerPhone String?
+  totalAmount  Float
+  status       OrderStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  items        OrderItem[]
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int    @id @default(autoincrement())
+  orderId     Int
+  catalogueId Int
+  quantity    Int
+  price       Float  // Harga saat order dibuat
+  productName String // Snapshot nama produk
+  
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// Model untuk Settings/Konfigurasi Website
+model Setting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
