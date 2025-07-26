@@ -11,7 +11,7 @@ Allow: /api/catalogues
 Allow: /api/banners
 
 # Sitemap location
-Sitemap: https://undagi-katalog.vercel.app/sitemap.xml
+Sitemap: https://katalog.undagicorp,com/sitemap.xml
 
 # Crawl delay
 Crawl-delay: 10

@@ -1,5 +1,5 @@
 export async function GET() {
-  const baseUrl = 'https://undagi-katalog.vercel.app'
+  const baseUrl = 'https://katalog.undagicorp,com'
   
   // Static pages
   const staticPages = [
