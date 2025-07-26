@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "PT. Gurita Bisnis Undagi - Jasa Konstruksi & Peralatan Dapur Industri",
+  metadataBase: new URL('https://undagi-katalog.vercel.app'),
+  title: "UNDAGI | KATALOG",
   description: "PT. Gurita Bisnis Undagi menyediakan layanan jasa konstruksi, renovasi dapur sehat, pengadaan peralatan dapur industri, instalasi utilitas, dan pendampingan sertifikasi SLHS. Berpengalaman dalam proyek dapur sehat skala besar dengan jaminan mutu.",
   keywords: [
     "jasa konstruksi dapur",
@@ -46,8 +47,12 @@ export const metadata = {
     title: "PT. Gurita Bisnis Undagi - Jasa Konstruksi Dapur Industri",
     description: "Spesialis konstruksi, renovasi dapur sehat, dan pengadaan peralatan dapur industri dengan jaminan mutu terpercaya.",
   },
-  viewport: "width=device-width, initial-scale=1",
   charset: "utf-8",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {

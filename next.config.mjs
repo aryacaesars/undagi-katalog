@@ -66,7 +66,7 @@ const nextConfig = {
   
   // Experimental features untuk performance
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled due to missing critters dependency
     optimizeServerReact: true,
   },
   

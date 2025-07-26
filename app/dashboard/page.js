@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -1019,9 +1020,11 @@ export default function Dashboard() {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start">
                       <div className="flex gap-4">
-                        <img 
+                        <Image 
                           src={item.foto} 
                           alt={item.namaBarang}
+                          width={96}
+                          height={96}
                           className="w-24 h-24 object-cover rounded-lg"
                         />
                         <div className="flex-1">
