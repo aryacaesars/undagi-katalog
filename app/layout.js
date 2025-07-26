@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://undagi-katalog.vercel.app'),
+  metadataBase: new URL('https://katalog.undagicorp,com'),
   title: "UNDAGI | KATALOG",
   description: "PT. Gurita Bisnis Undagi menyediakan layanan jasa konstruksi, renovasi dapur sehat, pengadaan peralatan dapur industri, instalasi utilitas, dan pendampingan sertifikasi SLHS. Berpengalaman dalam proyek dapur sehat skala besar dengan jaminan mutu.",
   keywords: [
@@ -36,7 +36,7 @@ export const metadata = {
   author: "PT. Gurita Bisnis Undagi",
   robots: "index, follow",
   openGraph: {
-    title: "PT. Gurita Bisnis Undagi - Ahli Konstruksi Dapur Industri",
+    title: "UNDAGI | KATALOG",
     description: "Layanan konstruksi dan renovasi dapur industri terpercaya. Spesialis peralatan dapur komersial, instalasi utilitas, dan sertifikasi SLHS.",
     type: "website",
     locale: "id_ID",
@@ -44,7 +44,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PT. Gurita Bisnis Undagi - Jasa Konstruksi Dapur Industri",
+    title: "UNDAGI | KATALOG",
     description: "Spesialis konstruksi, renovasi dapur sehat, dan pengadaan peralatan dapur industri dengan jaminan mutu terpercaya.",
   },
   charset: "utf-8",
@@ -60,7 +60,7 @@ export default function RootLayout({ children }) {
     <html lang="id">
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <link rel="canonical" href="https://undagi-katalog.vercel.app" />
+        <link rel="canonical" href="https://katalog.undagicorp,com" />
         <meta name="geo.region" content="ID" />
         <meta name="geo.country" content="Indonesia" />
         <meta name="DC.language" content="id" />
@@ -84,8 +84,8 @@ export default function RootLayout({ children }) {
               "@type": "Organization",
               "name": "PT. Gurita Bisnis Undagi",
               "description": "Layanan jasa konstruksi dan pengadaan peralatan dapur industri",
-              "url": "https://undagi-katalog.vercel.app",
-              "logo": "https://undagi-katalog.vercel.app/Logo.svg",
+              "url": "https://katalog.undagicorp,com",
+              "logo": "https://katalog.undagicorp,com/Logo.svg",
               "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "Customer Service",
@@ -131,7 +131,7 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
               "name": "PT. Gurita Bisnis Undagi",
-              "image": "https://undagi-katalog.vercel.app/Logo.svg",
+              "image": "https://katalog.undagicorp,com/Logo.svg",
               "description": "Spesialis jasa konstruksi dapur industri, renovasi dapur sehat, dan pengadaan peralatan dapur komersial dengan sertifikasi SLHS",
               "address": {
                 "@type": "PostalAddress",
@@ -140,7 +140,7 @@ export default function RootLayout({ children }) {
               "geo": {
                 "@type": "GeoCoordinates"
               },
-              "url": "https://undagi-katalog.vercel.app",
+              "url": "https://katalog.undagicorp,com",
               "telephone": "+62",
               "priceRange": "$$",
               "openingHoursSpecification": {
