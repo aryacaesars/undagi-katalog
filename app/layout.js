@@ -1,7 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/footer";
-import FloatingWhatsApp from "@/components/floating-whatsapp";
 import { CartProvider } from "@/lib/cart-context";
 import { GoogleAnalytics } from "@/components/analytics";
 
@@ -202,8 +200,6 @@ export default function RootLayout({ children }) {
       >
         <CartProvider>
           {children}
-          <Footer />
-          <FloatingWhatsApp />
         </CartProvider>
       </body>
     </html>

@@ -11,6 +11,12 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { bannerApi, catalogueApi } from '@/lib/api'
 import { 
+  getCurrentInvoiceCounter, 
+  setInvoiceCounter, 
+  getCompanyData, 
+  saveCompanyData 
+} from '@/lib/invoice-utils'
+import { 
   Edit, 
   Plus, 
   Trash2, 
@@ -21,7 +27,10 @@ import {
   EyeOff,
   FileSpreadsheet,
   Download,
-  Search 
+  Search,
+  Settings,
+  FileText,
+  Building2
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -48,6 +57,18 @@ export default function Dashboard() {
   const [itemsPerPage] = useState(6) // 6 items per halaman
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedJenis, setSelectedJenis] = useState('Semua')
+
+  // Invoice settings state
+  const [companyData, setCompanyData] = useState({
+    name: '',
+    address: '', 
+    phone: '',
+    email: '',
+    website: '',
+    logo: ''
+  })
+  const [invoiceCounter, setInvoiceCounterState] = useState(1)
+  const [isEditingCompany, setIsEditingCompany] = useState(false)
 
   // Form state untuk banner
   const [bannerForm, setBannerForm] = useState({
@@ -76,7 +97,48 @@ export default function Dashboard() {
   // Load data on component mount
   useEffect(() => {
     loadData()
+    loadInvoiceSettings()
   }, [])
+
+  // Load invoice settings
+  const loadInvoiceSettings = () => {
+    const company = getCompanyData()
+    setCompanyData(company)
+    
+    const counter = getCurrentInvoiceCounter()
+    setInvoiceCounterState(counter)
+  }
+
+  // Save company data
+  const saveCompanySettings = () => {
+    try {
+      saveCompanyData(companyData)
+      alert('Data perusahaan berhasil disimpan!')
+      setIsEditingCompany(false)
+    } catch (error) {
+      console.error('Error saving company data:', error)
+      alert('Gagal menyimpan data perusahaan')
+    }
+  }
+
+  // Update invoice counter
+  const updateInvoiceCounter = () => {
+    try {
+      setInvoiceCounter(invoiceCounter)
+      alert(`Nomor invoice berhasil diupdate ke ${invoiceCounter}!`)
+    } catch (error) {
+      console.error('Error updating invoice counter:', error)
+      alert('Gagal mengupdate nomor invoice')
+    }
+  }
+
+  // Handle company data input change
+  const handleCompanyInputChange = (field, value) => {
+    setCompanyData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
   // Get unique categories from catalogue data
   const jenisOptions = ['Semua', ...new Set(catalogueItems.map(item => item.jenis))]
@@ -119,6 +181,19 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Save company data
+  const handleSaveCompanyData = () => {
+    saveCompanyData(companyData)
+    setIsEditingCompany(false)
+    alert('Data perusahaan berhasil disimpan!')
+  }
+
+  // Update invoice counter
+  const handleUpdateInvoiceCounter = () => {
+    setInvoiceCounter(invoiceCounter)
+    alert(`Counter invoice berhasil diubah ke ${invoiceCounter}`)
   }
 
   // Handler untuk edit banner
@@ -545,9 +620,10 @@ export default function Dashboard() {
 
         {!isLoading && (
           <Tabs defaultValue="banner" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="banner">Kelola Banner</TabsTrigger>
             <TabsTrigger value="catalogue">Kelola Katalog</TabsTrigger>
+            <TabsTrigger value="invoice">Pengaturan Invoice</TabsTrigger>
           </TabsList>
 
           {/* Banner Management Tab */}
@@ -1181,6 +1257,210 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Invoice Settings Tab */}
+          <TabsContent value="invoice" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Pengaturan Invoice</h2>
+            </div>
+
+            {/* Company Data Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Data Perusahaan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!isEditingCompany ? (
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Nama Perusahaan</Label>
+                        <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">{companyData.name}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Email</Label>
+                        <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">{companyData.email}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Telepon</Label>
+                        <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">{companyData.phone}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Website</Label>
+                        <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">{companyData.website}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Alamat</Label>
+                      <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded">{companyData.address}</p>
+                    </div>
+                    <Button 
+                      onClick={() => setIsEditingCompany(true)}
+                      className="flex items-center gap-2 mt-4"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Data Perusahaan
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="companyName">Nama Perusahaan</Label>
+                        <Input
+                          id="companyName"
+                          value={companyData.name}
+                          onChange={(e) => setCompanyData({...companyData, name: e.target.value})}
+                          placeholder="Nama perusahaan"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyEmail">Email</Label>
+                        <Input
+                          id="companyEmail"
+                          type="email"
+                          value={companyData.email}
+                          onChange={(e) => setCompanyData({...companyData, email: e.target.value})}
+                          placeholder="email@perusahaan.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyPhone">Telepon</Label>
+                        <Input
+                          id="companyPhone"
+                          value={companyData.phone}
+                          onChange={(e) => setCompanyData({...companyData, phone: e.target.value})}
+                          placeholder="+62 21 1234 5678"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyWebsite">Website</Label>
+                        <Input
+                          id="companyWebsite"
+                          value={companyData.website}
+                          onChange={(e) => setCompanyData({...companyData, website: e.target.value})}
+                          placeholder="www.perusahaan.com"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="companyAddress">Alamat</Label>
+                      <Textarea
+                        id="companyAddress"
+                        value={companyData.address}
+                        onChange={(e) => setCompanyData({...companyData, address: e.target.value})}
+                        placeholder="Alamat lengkap perusahaan"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={saveCompanySettings}
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+                      >
+                        <Save className="w-4 h-4" />
+                        Simpan
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditingCompany(false)
+                          loadInvoiceSettings() // Reset form
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Batal
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Invoice Counter Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Nomor Invoice
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Format Nomor Invoice</Label>
+                  <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+                    <strong>INV-GBU-{invoiceCounter.toString().padStart(5, '0')}</strong> (Nomor berikutnya)
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="invoiceCounter">Counter Invoice Berikutnya</Label>
+                    <Input
+                      id="invoiceCounter"
+                      type="number"
+                      min="1"
+                      value={invoiceCounter}
+                      onChange={(e) => setInvoiceCounterState(parseInt(e.target.value) || 1)}
+                      placeholder="1"
+                      className="w-32"
+                    />
+                  </div>
+                  <Button 
+                    onClick={updateInvoiceCounter}
+                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+                  >
+                    <Save className="w-4 h-4" />
+                    Update Counter
+                  </Button>
+                </div>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <h4 className="font-medium text-yellow-800 mb-2">⚠️ Peringatan:</h4>
+                  <p className="text-sm text-yellow-700">
+                    Mengubah counter invoice akan mempengaruhi nomor invoice berikutnya. 
+                    Pastikan nomor yang diatur tidak duplikat dengan invoice yang sudah ada.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Invoice Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Preview Invoice
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-50 p-4 rounded-lg border">
+                  <div className="flex items-start gap-4 mb-4">
+                    <img 
+                      src="/Logo.svg" 
+                      alt="Logo" 
+                      className="w-16 h-16 object-contain"
+                    />
+                    <div>
+                      <h3 className="text-lg font-bold text-red-600">INVOICE</h3>
+                      <p className="text-sm text-gray-600">INV-GBU-{invoiceCounter.toString().padStart(5, '0')}</p>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <h4 className="font-bold text-sm">{companyData.name}</h4>
+                      <p className="text-xs text-gray-600">{companyData.address}</p>
+                      <p className="text-xs text-gray-600">{companyData.phone}</p>
+                      <p className="text-xs text-gray-600">{companyData.email}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">Preview tampilan invoice dengan data terbaru</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
         )}

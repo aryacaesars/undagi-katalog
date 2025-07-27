@@ -1,7 +1,9 @@
 import KitchenRenovationBanner from "@/components/banner";
 import Catalogue from "@/components/catalogue";
 import Navigasi from "@/components/navbar";
+import FloatingWhatsApp from "@/components/floating-whatsapp";
 import Image from "next/image";
+import Footer from "@/components/footer";
 
 export const metadata = {
   title: "UNDAGI | KATALOG",
@@ -35,7 +37,9 @@ export default function Home() {
     <div className="min-h-screen">
       <Navigasi />
       <KitchenRenovationBanner />
+      <FloatingWhatsApp />
       <Catalogue />
+      <Footer />
     </div>
   );
 }

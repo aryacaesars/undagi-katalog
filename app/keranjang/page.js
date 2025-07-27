@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/lib/cart-context'
+import CheckoutProgress from '@/components/checkout-progress'
 import { 
   ShoppingCart, 
   Plus, 
@@ -50,6 +51,16 @@ export default function KeranjangPage() {
       clearCart()
       showMessage('success', 'Keranjang berhasil dikosongkan')
     }
+  }
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      showMessage('error', 'Keranjang kosong! Silakan tambahkan produk terlebih dahulu.')
+      return
+    }
+
+    // Redirect to checkout page
+    window.location.href = '/checkout'
   }
 
   // Calculate totals using context function and manual calculations
@@ -98,6 +109,9 @@ export default function KeranjangPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 py-8">
+      {/* Checkout Progress */}
+      <CheckoutProgress currentStep={1} />
+      
       {/* Message Alert */}
       {message && (
         <div className={`fixed top-24 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -282,6 +296,7 @@ export default function KeranjangPage() {
                 <Button 
                   size="lg" 
                   className="w-full bg-red-600 hover:bg-red-700 text-white shadow-lg"
+                  onClick={handleCheckout}
                 >
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Lanjut ke Pembayaran
