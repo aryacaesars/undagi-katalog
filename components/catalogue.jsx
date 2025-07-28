@@ -8,13 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { catalogueApi } from '@/lib/api'
-import { useCart } from '@/lib/cart-context'
+import { useCartDB } from '@/lib/cart-db'
 import { 
   ShoppingCart, 
   Eye, 
   X, 
   CheckCircle,
-  AlertCircle 
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 
 // Format currency ke Rupiah
@@ -28,7 +29,7 @@ const formatCurrency = (amount) => {
 
 export default function Catalogue() {
   const router = useRouter()
-  const { addToCart } = useCart()
+  const { addToCart, loading: cartLoading } = useCartDB()
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [catalogueData, setCatalogueData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -40,11 +41,13 @@ export default function Catalogue() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [cartMessage, setCartMessage] = useState(null)
+  const [loadingItems, setLoadingItems] = useState(new Set())
 
   // Cart functions
-  const handleAddToCart = (item) => {
+  const handleAddToCart = async (item) => {
+    setLoadingItems(prev => new Set(prev.add(item.id)))
     try {
-      const success = addToCart(item)
+      const success = await addToCart(item.id, 1)
       if (success) {
         setCartMessage({
           type: 'success',
@@ -56,6 +59,12 @@ export default function Catalogue() {
       setCartMessage({
         type: 'error',
         text: 'Gagal menambahkan barang ke keranjang'
+      })
+    } finally {
+      setLoadingItems(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(item.id)
+        return newSet
       })
     }
     
@@ -243,9 +252,19 @@ export default function Catalogue() {
                 variant="outline" 
                 className="flex-1 border-red-600 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center space-x-1"
                 onClick={() => handleAddToCart(item)}
+                disabled={loadingItems.has(item.id)}
               >
-                <ShoppingCart className="w-4 h-4" />
-                <span>Tambah ke Keranjang</span>
+                {loadingItems.has(item.id) ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Tambah ke Keranjang</span>
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -439,9 +458,19 @@ export default function Catalogue() {
                   handleAddToCart(selectedItem)
                   closeDetailModal()
                 }}
+                disabled={selectedItem && loadingItems.has(selectedItem.id)}
               >
-                <ShoppingCart className="w-4 h-4" />
-                <span>Tambah ke Keranjang</span>
+                {selectedItem && loadingItems.has(selectedItem.id) ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Tambah ke Keranjang</span>
+                  </>
+                )}
               </Button>
             </div>
           </div>

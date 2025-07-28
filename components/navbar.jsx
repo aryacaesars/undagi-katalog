@@ -12,18 +12,39 @@ import {
   NavbarButton 
 } from "@/components/ui/resizeable-navbar";
 import Image from "next/image";
-import { useState } from "react";
-import { useCart } from "@/lib/cart-context";
+import { useState, useMemo, useEffect } from "react";
+import { useCartDB } from "@/lib/cart-db";
 import { ShoppingCart } from "lucide-react";
 
 export default function Navigasi() {
   const [isOpen, setIsOpen] = useState(false);
-  const { cartCount } = useCart();
+  const [forceUpdate, setForceUpdate] = useState(0);
+  const { cartItems, getItemCount } = useCartDB();
+  
+  // Listen to cart update events
+  useEffect(() => {
+    const handleCartUpdate = (event) => {
+      console.log('Cart update event received:', event.detail);
+      setForceUpdate(prev => prev + 1); // Force re-render
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
+  
+  // Use useMemo to ensure re-calculation when cartItems change
+  const itemCount = useMemo(() => {
+    return cartItems.reduce((count, item) => count + (item.quantity || 0), 0)
+  }, [cartItems, forceUpdate]); // Add forceUpdate dependency
+
+  console.log('Navbar render - cartItems:', cartItems.length, 'itemCount:', itemCount, 'forceUpdate:', forceUpdate);
 
   const navItems = [
     { name: "Beranda", link: "/" },
-    { name: "Katalog", link: "#about" },
-    { name: "Tentang Kami", link: "#services" },  
+    { name: "Katalog", link: "#katalog" },
+    { name: "Tentang Kami", link: "https://www.undagicorp.com/en" },  
     { name: "Contact", link: "#contact" },
   ];
 
@@ -38,9 +59,9 @@ export default function Navigasi() {
             <NavbarButton href="/keranjang" className="flex items-center space-x-2">
               <ShoppingCart className="w-4 h-4" />
               <span>Keranjang</span>
-              {cartCount > 0 && (
+              {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-                  {cartCount > 99 ? '99+' : cartCount}
+                  {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
             </NavbarButton>
@@ -67,12 +88,12 @@ export default function Navigasi() {
                 {item.name}
               </a>
             ))}
-            <NavbarButton href="#contact" className="mt-4 flex items-center space-x-2">
+            <NavbarButton href="/keranjang" className="mt-4 flex items-center space-x-2">
               <ShoppingCart className="w-4 h-4" />
               <span>Keranjang</span>
-              {cartCount > 0 && (
+              {itemCount > 0 && (
                 <span className="bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] ml-2">
-                  {cartCount > 99 ? '99+' : cartCount}
+                  {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
             </NavbarButton>

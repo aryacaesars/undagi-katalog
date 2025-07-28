@@ -145,6 +145,94 @@ enum OrderStatus {
   CANCELLED
 }
 
+// Model untuk Company/Perusahaan (untuk invoice header)
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String
+  email     String
+  website   String?
+  logo      String?  // URL to logo image
+  isDefault Boolean  @default(false) // Mark default company for invoices
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi balik
+  invoices  Invoice[]
+
+  @@map("companies")
+}
+
+// Model untuk Customer/Pelanggan
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  company   String?
+  address   String
+  phone     String
+  email     String
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relasi balik
+  invoices  Invoice[]
+
+  @@map("customers")
+}
+
+// Model untuk Invoice
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  invoiceNumber String        @unique
+  companyId     Int
+  customerId    Int
+  date          DateTime      @default(now())
+  dueDate       DateTime
+  subtotal      Float         @default(0)
+  tax           Float         @default(0)
+  serviceCharge Float         @default(0)
+  total         Float         @default(0)
+  status        InvoiceStatus @default(DRAFT)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relasi
+  company   Company       @relation(fields: [companyId], references: [id])
+  customer  Customer      @relation(fields: [customerId], references: [id])
+  items     InvoiceItem[]
+
+  @@map("invoices")
+}
+
+// Model untuk Invoice Items
+model InvoiceItem {
+  id            Int     @id @default(autoincrement())
+  invoiceId     Int
+  name          String
+  specification String?
+  quantity      Float
+  unit          String
+  unitPrice     Float
+  total         Float
+  sortOrder     Int     @default(0) // For ordering items in invoice
+
+  // Relasi
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
 // Model untuk Settings/Konfigurasi Website
 model Setting {
   id          Int      @id @default(autoincrement())

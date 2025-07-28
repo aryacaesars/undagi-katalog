@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { useCart } from '@/lib/cart-context'
+import { useCartDB } from '@/lib/cart-db'
 import CheckoutProgress from '@/components/checkout-progress'
 import { validateAndSanitizeCustomerData } from '@/lib/form-validation'
-import { generateInvoiceNumber } from '@/lib/invoice-utils'
 import { 
   ArrowLeft, 
   User, 
@@ -36,9 +35,10 @@ const formatCurrency = (amount) => {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { cartItems, getTotalPrice, isLoaded } = useCart()
-  const [loading, setLoading] = useState(false)
+  const { cartItems, getTotalPrice, loading, sessionId, clearCart } = useCartDB()
+  const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState(null)
+  const [redirectingToInvoice, setRedirectingToInvoice] = useState(false)
   
   // Form data
   const [customerData, setCustomerData] = useState({
@@ -57,11 +57,24 @@ export default function CheckoutPage() {
 
   // Handle redirect when cart is loaded and empty
   useEffect(() => {
-    if (isLoaded && cartItems.length === 0) {
-      console.log('Cart is loaded and empty, redirecting to home')
-      router.push('/')
+    console.log('Checkout useEffect - loading:', loading, 'cartItems.length:', cartItems.length, 'sessionId:', sessionId, 'redirectingToInvoice:', redirectingToInvoice)
+    
+    // Only redirect if loading is complete, sessionId exists, cart is empty, and we're not redirecting to invoice
+    if (!loading && sessionId && cartItems.length === 0 && !redirectingToInvoice) {
+      console.log('Cart is loaded and empty, scheduling redirect to home')
+      
+      // Add a longer delay to ensure proper loading and avoid race conditions
+      const timeout = setTimeout(() => {
+        console.log('Executing redirect to home')
+        router.push('/')
+      }, 3000) // Increased to 3 seconds
+      
+      return () => {
+        console.log('Clearing redirect timeout')
+        clearTimeout(timeout)
+      }
     }
-  }, [isLoaded, cartItems.length, router])
+  }, [loading, cartItems.length, sessionId, redirectingToInvoice, router])
 
   const showMessage = (type, text) => {
     setMessage({ type, text })
@@ -103,23 +116,102 @@ export default function CheckoutPage() {
       return
     }
 
-    setLoading(true)
+    setSubmitting(true)
 
     try {
-      // Generate sequential invoice number
-      const orderId = generateInvoiceNumber()
+      // Step 1: Create or find customer
+      const customerPayload = {
+        name: customerData.name,
+        company: customerData.company || null,
+        address: customerData.address + (customerData.city ? `, ${customerData.city}` : '') + (customerData.postalCode ? ` ${customerData.postalCode}` : ''),
+        phone: customerData.phone,
+        email: customerData.email,
+        notes: customerData.notes || null
+      }
+      
+      console.log('Creating customer with data:', customerPayload)
+      
+      const customerResponse = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customerPayload)
+      })
 
-      // Save customer data to sessionStorage (or could be saved to database)
-      sessionStorage.setItem('customerData', JSON.stringify(customerData))
-      sessionStorage.setItem('orderId', orderId)
+      const customerResult = await customerResponse.json()
+      console.log('Customer API response:', customerResult)
+      
+      if (!customerResult.success) {
+        throw new Error(customerResult.error || 'Failed to create customer')
+      }
 
-      // Redirect to invoice page
-      router.push(`/invoice?orderId=${orderId}`)
+      // Step 2: Get default company
+      const companyResponse = await fetch('/api/companies?limit=100') // Get all companies
+      const companyResult = await companyResponse.json()
+      
+      console.log('Company API response:', companyResult)
+      
+      if (!companyResult.success || !companyResult.data || companyResult.data.length === 0) {
+        throw new Error('No company found in database. Please create a company first.')
+      }
+
+      // Find default company or use first one
+      const defaultCompany = companyResult.data.find(c => c.isDefault) || companyResult.data[0]
+      console.log('Using company:', defaultCompany)
+
+      // Step 3: Prepare invoice items from cart
+      const invoiceItems = cartItems.map(item => ({
+        name: item.namaBarang,
+        specification: item.spesifikasi || '',
+        quantity: item.quantity,
+        unit: item.satuan,
+        unitPrice: item.jumlah || item.hargaSatuan
+      }))
+
+      // Step 4: Create invoice
+      const dueDate = new Date()
+      dueDate.setDate(dueDate.getDate() + 30) // 30 days from now
+
+      const invoicePayload = {
+        companyId: defaultCompany.id,
+        customerId: customerResult.data.id,
+        dueDate: dueDate.toISOString(),
+        items: invoiceItems,
+        tax: subtotal * 0.11, // 11% PPN
+        serviceCharge: 12737500, // Service Charge
+        notes: customerData.notes || null
+      }
+      
+      console.log('Creating invoice with data:', invoicePayload)
+
+      const invoiceResponse = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(invoicePayload)
+      })
+
+      const invoiceResult = await invoiceResponse.json()
+      console.log('Invoice API response:', invoiceResult)
+      
+      if (!invoiceResult.success) {
+        throw new Error(invoiceResult.error || 'Failed to create invoice')
+      }
+
+      // Step 5: Set flag to prevent redirect to home and redirect immediately to invoice page
+      setRedirectingToInvoice(true)
+      router.replace(`/invoice/${invoiceResult.data.id}?view=user`)
+      
+      // Step 6: Clear cart after redirect (in background)
+      clearCart()
+      
     } catch (error) {
       console.error('Error processing checkout:', error)
-      showMessage('error', 'Terjadi kesalahan saat memproses data. Silakan coba lagi.')
+      showMessage('error', `Terjadi kesalahan: ${error.message}`)
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -129,21 +221,26 @@ export default function CheckoutPage() {
   const serviceCharge = 12737500 // Service Charge
   const total = subtotal + tax + serviceCharge
 
-  // Show loading while cart is being loaded from localStorage
-  if (!isLoaded) {
+  // Show loading while cart is being loaded from database or while submitting
+  if (loading || !sessionId || submitting || redirectingToInvoice) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 py-8 flex items-center justify-center">
         <Card className="text-center py-16 max-w-md">
           <CardContent>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Memuat halaman checkout...</p>
+            <p className="text-gray-600">
+              {submitting || redirectingToInvoice ? 'Memproses pesanan...' : 'Memuat halaman checkout...'}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {submitting || redirectingToInvoice ? 'Membuat invoice...' : 'Mengambil data keranjang...'}
+            </p>
           </CardContent>
         </Card>
       </div>
     )
   }
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !submitting && !redirectingToInvoice) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 py-8 flex items-center justify-center">
         <Card className="text-center py-16 max-w-md">
@@ -369,12 +466,12 @@ export default function CheckoutPage() {
                       type="submit" 
                       size="lg" 
                       className="w-full bg-red-600 hover:bg-red-700 text-white"
-                      disabled={loading}
+                      disabled={submitting}
                     >
-                      {loading ? (
+                      {submitting ? (
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Memproses...
+                          Membuat Invoice...
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
@@ -405,14 +502,14 @@ export default function CheckoutPage() {
                     <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm text-gray-900 truncate">
-                          {item.namaBarang}
+                          {item.namaBarang || 'Unknown Product'}
                         </h4>
                         <p className="text-xs text-gray-600">
-                          {item.quantity} {item.satuan} × {formatCurrency(item.hargaSatuan)}
+                          {item.quantity || 0} {item.satuan || 'unit'} × {formatCurrency(item.jumlah || item.hargaSatuan || 0)}
                         </p>
                       </div>
                       <div className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(item.jumlah ? (item.jumlah * item.quantity) : (item.hargaSatuan * item.quantity))}
+                        {formatCurrency((item.jumlah || item.hargaSatuan || 0) * (item.quantity || 0))}
                       </div>
                     </div>
                   ))}

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { bannerApi, catalogueApi } from '@/lib/api'
 import { 
   getCurrentInvoiceCounter, 
+  updateInvoiceCounter,
   setInvoiceCounter, 
   getCompanyData, 
   saveCompanyData 
@@ -101,18 +102,33 @@ export default function Dashboard() {
   }, [])
 
   // Load invoice settings
-  const loadInvoiceSettings = () => {
-    const company = getCompanyData()
-    setCompanyData(company)
-    
-    const counter = getCurrentInvoiceCounter()
-    setInvoiceCounterState(counter)
+  const loadInvoiceSettings = async () => {
+    try {
+      const company = await getCompanyData()
+      setCompanyData(company)
+      
+      const counter = await getCurrentInvoiceCounter()
+      setInvoiceCounterState(counter)
+    } catch (error) {
+      console.error('Error loading invoice settings:', error)
+      // Use fallback data
+      const fallbackCompany = {
+        name: 'UNDAGI',
+        address: 'Jl. Raya No. 123, Jakarta Selatan 12345',
+        phone: '+62 21 1234 5678',
+        email: 'info@undagi.com',
+        website: 'www.undagi.com',
+        logo: '/Logo.svg'
+      }
+      setCompanyData(fallbackCompany)
+      setInvoiceCounterState(1)
+    }
   }
 
   // Save company data
-  const saveCompanySettings = () => {
+  const saveCompanySettings = async () => {
     try {
-      saveCompanyData(companyData)
+      await saveCompanyData(companyData)
       alert('Data perusahaan berhasil disimpan!')
       setIsEditingCompany(false)
     } catch (error) {
@@ -122,9 +138,9 @@ export default function Dashboard() {
   }
 
   // Update invoice counter
-  const updateInvoiceCounter = () => {
+  const updateInvoiceCounterHandler = async () => {
     try {
-      setInvoiceCounter(invoiceCounter)
+      await updateInvoiceCounter(invoiceCounter)
       alert(`Nomor invoice berhasil diupdate ke ${invoiceCounter}!`)
     } catch (error) {
       console.error('Error updating invoice counter:', error)
@@ -188,12 +204,6 @@ export default function Dashboard() {
     saveCompanyData(companyData)
     setIsEditingCompany(false)
     alert('Data perusahaan berhasil disimpan!')
-  }
-
-  // Update invoice counter
-  const handleUpdateInvoiceCounter = () => {
-    setInvoiceCounter(invoiceCounter)
-    alert(`Counter invoice berhasil diubah ke ${invoiceCounter}`)
   }
 
   // Handler untuk edit banner
@@ -1412,7 +1422,7 @@ export default function Dashboard() {
                     />
                   </div>
                   <Button 
-                    onClick={updateInvoiceCounter}
+                    onClick={updateInvoiceCounterHandler}
                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
                   >
                     <Save className="w-4 h-4" />

@@ -5,6 +5,96 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting seed...')
 
+  // Seed Company (Default)
+  console.log('Seeding default company...')
+  const defaultCompany = await prisma.company.create({
+    data: {
+      name: 'UNDAGI',
+      address: 'Jl. Raya No. 123, Jakarta Selatan 12345',
+      phone: '+62 21 1234 5678',
+      email: 'info@undagi.com',
+      website: 'www.undagi.com',
+      logo: '/Logo.svg',
+      isDefault: true
+    }
+  })
+
+  // Seed Sample Customers
+  console.log('Seeding sample customers...')
+  const customers = await Promise.all([
+    prisma.customer.create({
+      data: {
+        name: 'PT. Maju Bersama',
+        company: 'PT. Maju Bersama',
+        address: 'Jl. Sudirman No. 45, Jakarta Pusat 10210',
+        phone: '+62 21 5555 1234',
+        email: 'purchasing@majubersama.co.id',
+        notes: 'Customer corporate dengan order volume besar'
+      }
+    }),
+    prisma.customer.create({
+      data: {
+        name: 'Budi Santoso',
+        company: 'Toko Bangunan Santoso',
+        address: 'Jl. Raya Bogor No. 88, Depok 16411',
+        phone: '+62 21 8765 4321',
+        email: 'budi.santoso@gmail.com',
+        notes: 'Customer retail, sering order furniture kantor'
+      }
+    }),
+    prisma.customer.create({
+      data: {
+        name: 'Sari Dewi',
+        address: 'Jl. Melati No. 12, Bekasi 17111',
+        phone: '+62 812 3456 7890',
+        email: 'sari.dewi@yahoo.com',
+        notes: 'Customer individual, fokus pada produk rumah tangga'
+      }
+    })
+  ])
+
+  // Seed Sample Invoice
+  console.log('Seeding sample invoice...')
+  const sampleInvoice = await prisma.invoice.create({
+    data: {
+      invoiceNumber: 'INV-000001',
+      companyId: defaultCompany.id,
+      customerId: customers[0].id,
+      dueDate: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)), // 30 days from now
+      subtotal: 5000000,
+      tax: 550000, // 11%
+      serviceCharge: 100000,
+      total: 5650000,
+      status: 'SENT',
+      notes: 'Invoice contoh untuk testing system',
+      items: {
+        create: [
+          {
+            name: 'Kitchen Set Minimalis',
+            specification: '3 meter, finishing HPL, include sink',
+            quantity: 1,
+            unit: 'Set',
+            unitPrice: 3500000,
+            total: 3500000,
+            sortOrder: 1
+          },
+          {
+            name: 'Granite Countertop',
+            specification: 'Granite hitam premium, ketebalan 3cm',
+            quantity: 3,
+            unit: 'M2',
+            unitPrice: 500000,
+            total: 1500000,
+            sortOrder: 2
+          }
+        ]
+      }
+    },
+    include: {
+      items: true
+    }
+  })
+
   // Seed Banners
   console.log('Seeding banners...')
   await prisma.banner.createMany({

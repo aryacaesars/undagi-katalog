@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useCart } from '@/lib/cart-context'
+import { useCartDB } from '@/lib/cart-db'
 import CheckoutProgress from '@/components/checkout-progress'
 import { 
   ShoppingCart, 
@@ -15,7 +16,8 @@ import {
   ArrowLeft, 
   CheckCircle,
   AlertCircle,
-  ShoppingBag
+  ShoppingBag,
+  Loader2
 } from 'lucide-react'
 
 // Format currency ke Rupiah
@@ -28,7 +30,19 @@ const formatCurrency = (amount) => {
 }
 
 export default function KeranjangPage() {
-  const { cartItems, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart()
+  const router = useRouter()
+  const { 
+    cartItems, 
+    loading, 
+    error,
+    updateQuantity, 
+    removeFromCart, 
+    clearCart, 
+    getTotalPrice,
+    getItemCount,
+    setError
+  } = useCartDB()
+  
   const [message, setMessage] = useState(null)
 
   const showMessage = (type, text) => {
@@ -36,20 +50,32 @@ export default function KeranjangPage() {
     setTimeout(() => setMessage(null), 3000)
   }
 
-  const handleQuantityChange = (itemId, newQuantity) => {
+  const handleQuantityChange = async (catalogueId, newQuantity) => {
     if (newQuantity < 1) return
-    updateQuantity(itemId, newQuantity)
+    
+    const success = await updateQuantity(catalogueId, newQuantity)
+    if (!success && error) {
+      showMessage('error', error)
+    }
   }
 
-  const handleRemoveItem = (item) => {
-    removeFromCart(item.id)
-    showMessage('success', `${item.namaBarang} berhasil dihapus dari keranjang`)
+  const handleRemoveItem = async (item) => {
+    const success = await removeFromCart(item.id)
+    if (success) {
+      showMessage('success', `${item.namaBarang} berhasil dihapus dari keranjang`)
+    } else if (error) {
+      showMessage('error', error)
+    }
   }
 
-  const handleClearCart = () => {
+  const handleClearCart = async () => {
     if (cartItems.length > 0) {
-      clearCart()
-      showMessage('success', 'Keranjang berhasil dikosongkan')
+      const success = await clearCart()
+      if (success) {
+        showMessage('success', 'Keranjang berhasil dikosongkan')
+      } else if (error) {
+        showMessage('error', error)
+      }
     }
   }
 
@@ -59,15 +85,28 @@ export default function KeranjangPage() {
       return
     }
 
-    // Redirect to checkout page
-    window.location.href = '/checkout'
+    console.log('Navigating to checkout with', cartItems.length, 'items')
+    // Use Next.js router for smooth navigation
+    router.push('/checkout')
   }
 
-  // Calculate totals using context function and manual calculations
-  const subtotal = getTotalPrice()
+  // Calculate totals
+  const subtotal = getTotalPrice() // This now uses jumlah instead of hargaSatuan
   const tax = subtotal * 0.11 // 11% PPN
   const serviceCharge = 12737500 // Service Charge (Biaya Survey, Pengiriman & Inspeksi)
   const total = subtotal + tax + serviceCharge
+
+  // Loading state
+  if (loading && cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-red-600" />
+          <p className="text-gray-600">Memuat keranjang...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -141,7 +180,7 @@ export default function KeranjangPage() {
               <h1 className="text-3xl font-bold text-gray-900">Keranjang Belanja</h1>
             </div>
             <Badge variant="secondary" className="text-lg px-3 py-1">
-              {cartItems.length} Item
+              {getItemCount()} Item
             </Badge>
           </div>
           
@@ -223,18 +262,19 @@ export default function KeranjangPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
+                              disabled={item.quantity <= 1 || loading}
                               className="h-8 w-8 p-0 hover:bg-gray-100"
                             >
                               <Minus className="w-4 h-4" />
                             </Button>
                             <span className="px-3 py-1 text-center min-w-[40px] font-semibold">
-                              {item.quantity}
+                              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : item.quantity}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              disabled={loading}
                               className="h-8 w-8 p-0 hover:bg-gray-100"
                             >
                               <Plus className="w-4 h-4" />
@@ -270,7 +310,7 @@ export default function KeranjangPage() {
                 {/* Price Breakdown */}
                 <div className="space-y-2 pb-4 border-b">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal ({cartItems.length} item)</span>
+                    <span className="text-gray-600">Subtotal ({getItemCount()} item)</span>
                     <span className="font-semibold">{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
