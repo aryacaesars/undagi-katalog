@@ -1,4 +1,5 @@
 import KitchenRenovationBanner from "@/components/banner";
+import PricingPlans from "@/components/pricing-plans";
 import Catalogue from "@/components/catalogue";
 import Navigasi from "@/components/navbar";
 import FloatingWhatsApp from "@/components/floating-whatsapp";
@@ -37,6 +38,7 @@ export default function Home() {
     <div className="min-h-screen">
       <Navigasi />
       <KitchenRenovationBanner />
+      <PricingPlans />
       <FloatingWhatsApp />
       <Catalogue />
       <Footer />
