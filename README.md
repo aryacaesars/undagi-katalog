@@ -29,8 +29,10 @@ PT. Gurita Bisnis Undagi adalah perusahaan yang bergerak di bidang:
 ### Untuk Admin (Dashboard):
 - **Manajemen Katalog** - CRUD operations untuk produk katalog
 - **Manajemen Banner** - CRUD operations untuk banner layanan
-- **Bulk Operations** - Import/export data katalog
+- **Pricing Plans Management** - CRUD pricing plans dengan CSV import/export
+- **Bulk Operations** - Import/export data katalog dan pricing plans
 - **Media Management** - Upload dan manajemen gambar produk
+- **CSV Import/Export** - Import data dalam jumlah banyak menggunakan CSV
 
 ## 🛠 Teknologi yang Digunakan
 

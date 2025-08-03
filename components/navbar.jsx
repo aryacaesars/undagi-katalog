@@ -46,7 +46,6 @@ export default function Navigasi() {
     { name: "Katalog", link: "#katalog" },
     { name: "Tentang Kami", link: "https://www.undagicorp.com/en" },  
     { name: "Contact", link: "#contact" },
-    { name: "Dashboard", link: "/dashboard" },
   ];
 
   return (
