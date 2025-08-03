@@ -31,7 +31,8 @@ import {
   Search,
   Settings,
   FileText,
-  Building2
+  Building2,
+  DollarSign
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -630,9 +631,10 @@ export default function Dashboard() {
 
         {!isLoading && (
           <Tabs defaultValue="banner" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="banner">Kelola Banner</TabsTrigger>
             <TabsTrigger value="catalogue">Kelola Katalog</TabsTrigger>
+            <TabsTrigger value="pricing">Kelola Pricing</TabsTrigger>
             <TabsTrigger value="invoice">Pengaturan Invoice</TabsTrigger>
           </TabsList>
 
@@ -1267,6 +1269,68 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Pricing Plans Management Tab */}
+          <TabsContent value="pricing" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Kelola Paket Harga</h2>
+              <Button 
+                onClick={() => window.open('/dashboard/pricing-plans', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <DollarSign className="w-4 h-4" />
+                Buka Pricing Manager
+              </Button>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Paket Pricing Terintegrasi</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Kelola paket harga renovasi dapur Anda dengan mudah. Sistem pricing yang terintegrasi 
+                  memungkinkan Anda untuk mengubah harga, fitur, dan detail paket secara real-time.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-2">Paket Basic</h4>
+                    <p className="text-sm text-blue-700">Solusi dasar untuk renovasi dapur kecil</p>
+                    <p className="text-lg font-bold text-blue-900 mt-2">Rp 15 juta</p>
+                  </div>
+                  
+                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <h4 className="font-semibold text-red-900 mb-2">Paket Regular</h4>
+                    <p className="text-sm text-red-700">Pilihan terpopuler dengan fitur lengkap</p>
+                    <p className="text-lg font-bold text-red-900 mt-2">Rp 35 juta</p>
+                  </div>
+                  
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-2">Paket Premium</h4>
+                    <p className="text-sm text-purple-700">Luxury dengan material terbaik</p>
+                    <p className="text-lg font-bold text-purple-900 mt-2">Rp 65 juta</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    onClick={() => window.open('/dashboard/pricing-plans', '_blank')}
+                    className="flex-1"
+                  >
+                    Edit Pricing Plans
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.open('/', '_blank')}
+                    className="flex-1"
+                  >
+                    Preview di Website
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Invoice Settings Tab */}

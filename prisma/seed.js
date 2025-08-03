@@ -19,6 +19,7 @@ async function main() {
   await prisma.banner.deleteMany();
   await prisma.user.deleteMany();
   await prisma.setting.deleteMany();
+  await prisma.pricingPlan.deleteMany();
 
   // Seed Companies
   console.log('🏢 Seeding companies...');
@@ -396,6 +397,95 @@ async function main() {
     ],
   });
 
+  // Seed Pricing Plans
+  console.log('💰 Seeding pricing plans...');
+  const pricingPlans = await prisma.pricingPlan.createMany({
+    data: [
+      {
+        name: 'Basic',
+        subtitle: 'Solusi Dasar Terjangkau',
+        price: '15 juta',
+        originalPrice: '20 juta',
+        discount: '25%',
+        description: 'Paket dasar untuk renovasi dapur kecil dengan kualitas standar yang baik',
+        features: [
+          'Kitchen set standar (HPL finish)',
+          'Countertop granite lokal',
+          'Sink stainless steel 1 bowl',
+          'Kran air standar',
+          'Instalasi listrik dasar',
+          'Cat tembok anti jamur',
+          'Garansi 1 tahun'
+        ],
+        limitations: [
+          'Maksimal 3 meter linear',
+          'Tidak termasuk appliances',
+          'Desain template'
+        ],
+        popular: false,
+        color: 'blue',
+        sortOrder: 1,
+        isActive: true
+      },
+      {
+        name: 'Regular',
+        subtitle: 'Pilihan Terpopuler',
+        price: '35 juta',
+        originalPrice: '45 juta',
+        discount: '22%',
+        description: 'Paket lengkap dengan kualitas premium dan fitur tambahan yang optimal',
+        features: [
+          'Kitchen set custom (Polyurethane finish)',
+          'Countertop granite import/quartz',
+          'Sink stainless steel double bowl',
+          'Kran air dengan spray',
+          'Instalasi listrik + under cabinet LED',
+          'Backsplash keramik premium',
+          'Exhaust fan powerful',
+          'Cat anti jamur & mudah dibersihkan',
+          'Soft closing drawer & door',
+          'Garansi 2 tahun'
+        ],
+        limitations: [
+          'Maksimal 5 meter linear',
+          '1 appliance included'
+        ],
+        popular: true,
+        color: 'red',
+        sortOrder: 2,
+        isActive: true
+      },
+      {
+        name: 'Premium',
+        subtitle: 'Luxury & Exclusive',
+        price: '65 juta',
+        originalPrice: '85 juta',
+        discount: '24%',
+        description: 'Paket premium dengan material terbaik dan desain eksklusif sesuai keinginan',
+        features: [
+          'Kitchen set full custom (Lacquer finish)',
+          'Countertop marble/engineered stone',
+          'Sink granite/ceramic premium',
+          'Kran pull-out dengan filter',
+          'Smart lighting system',
+          'Backsplash natural stone/mosaic',
+          'Range hood stainless steel',
+          'Kitchen island (opsional)',
+          'Built-in appliances premium',
+          'Soft close full extension',
+          'Smart storage solutions',
+          'Konsultasi desainer',
+          'Garansi 3 tahun'
+        ],
+        limitations: [],
+        popular: false,
+        color: 'purple',
+        sortOrder: 3,
+        isActive: true
+      }
+    ]
+  });
+
   console.log('✅ Database seeding completed successfully!');
   console.log('📊 Summary:');
   console.log(`   - Companies: ${companyRecords.length}`);
@@ -405,6 +495,7 @@ async function main() {
   console.log(`   - Banners: 2`);
   console.log(`   - Users: 3`);
   console.log(`   - Settings: 7`);
+  console.log(`   - Pricing Plans: 3`);
 }
 
 main()

@@ -244,3 +244,24 @@ model Setting {
 
   @@map("settings")
 }
+
+// Model untuk Pricing Plans
+model PricingPlan {
+  id            Int      @id @default(autoincrement())
+  name          String   // Basic, Regular, Premium
+  subtitle      String
+  price         String
+  originalPrice String
+  discount      String
+  description   String
+  features      String[] // Array of features
+  limitations   String[] // Array of limitations
+  popular       Boolean  @default(false)
+  color         String   @default("blue") // blue, red, purple, etc
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0) // For ordering plans
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("pricing_plans")
+}
