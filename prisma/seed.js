@@ -1,274 +1,417 @@
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...')
+  console.log('🌱 Starting database seeding...');
 
-  // Seed Company (Default)
-  console.log('Seeding default company...')
-  const defaultCompany = await prisma.company.create({
-    data: {
-      name: 'UNDAGI',
-      address: 'Jl. Raya No. 123, Jakarta Selatan 12345',
-      phone: '+62 21 1234 5678',
-      email: 'info@undagi.com',
-      website: 'www.undagi.com',
-      logo: '/Logo.svg',
-      isDefault: true
-    }
-  })
+  // Clear existing data
+  console.log('🧹 Cleaning existing data...');
+  await prisma.invoiceItem.deleteMany();
+  await prisma.invoice.deleteMany();
+  await prisma.customer.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.catalogue.deleteMany();
+  await prisma.banner.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.setting.deleteMany();
 
-  // Seed Sample Customers
-  console.log('Seeding sample customers...')
-  const customers = await Promise.all([
-    prisma.customer.create({
-      data: {
-        name: 'PT. Maju Bersama',
-        company: 'PT. Maju Bersama',
-        address: 'Jl. Sudirman No. 45, Jakarta Pusat 10210',
-        phone: '+62 21 5555 1234',
-        email: 'purchasing@majubersama.co.id',
-        notes: 'Customer corporate dengan order volume besar'
-      }
-    }),
-    prisma.customer.create({
-      data: {
+  // Seed Companies
+  console.log('🏢 Seeding companies...');
+  const companies = await prisma.company.createMany({
+    data: [
+      {
+        name: 'UNDAGI Solutions',
+        address: 'Jl. Teknologi No. 123, Jakarta Selatan 12345',
+        phone: '+62 21 1234 5678',
+        email: 'info@undagi.com',
+        website: 'https://undagi.com',
+        logo: '/logos/undagi-logo.png',
+        isDefault: true,
+      },
+      {
+        name: 'PT Mitra Konstruksi',
+        address: 'Jl. Pembangunan No. 456, Bandung 40123',
+        phone: '+62 22 9876 5432',
+        email: 'contact@mitrakonstruksi.co.id',
+        website: 'https://mitrakonstruksi.co.id',
+        logo: '/logos/mitra-logo.png',
+        isDefault: false,
+      },
+    ],
+  });
+
+  // Seed Customers
+  console.log('👥 Seeding customers...');
+  const customers = await prisma.customer.createMany({
+    data: [
+      {
         name: 'Budi Santoso',
-        company: 'Toko Bangunan Santoso',
-        address: 'Jl. Raya Bogor No. 88, Depok 16411',
-        phone: '+62 21 8765 4321',
-        email: 'budi.santoso@gmail.com',
-        notes: 'Customer retail, sering order furniture kantor'
-      }
-    }),
-    prisma.customer.create({
-      data: {
-        name: 'Sari Dewi',
-        address: 'Jl. Melati No. 12, Bekasi 17111',
-        phone: '+62 812 3456 7890',
-        email: 'sari.dewi@yahoo.com',
-        notes: 'Customer individual, fokus pada produk rumah tangga'
-      }
-    })
-  ])
+        company: 'PT Karya Mandiri',
+        address: 'Jl. Mawar No. 789, Surabaya 60123',
+        phone: '+62 31 1111 2222',
+        email: 'budi.santoso@karyamandiri.co.id',
+        notes: 'Pelanggan VIP - prioritas tinggi',
+      },
+      {
+        name: 'Siti Nurhaliza',
+        company: 'CV Berkah Jaya',
+        address: 'Jl. Melati No. 321, Yogyakarta 55123',
+        phone: '+62 274 3333 4444',
+        email: 'siti@berkahjaya.com',
+        notes: 'Repeat customer, pembayaran selalu tepat waktu',
+      },
+      {
+        name: 'Ahmad Wijaya',
+        company: null,
+        address: 'Jl. Kenanga No. 654, Medan 20123',
+        phone: '+62 61 5555 6666',
+        email: 'ahmad.wijaya@gmail.com',
+        notes: 'Pelanggan individu',
+      },
+    ],
+  });
 
-  // Seed Sample Invoice
-  console.log('Seeding sample invoice...')
-  const sampleInvoice = await prisma.invoice.create({
-    data: {
-      invoiceNumber: 'INV-000001',
-      companyId: defaultCompany.id,
-      customerId: customers[0].id,
-      dueDate: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)), // 30 days from now
-      subtotal: 5000000,
-      tax: 550000, // 11%
-      serviceCharge: 100000,
-      total: 5650000,
-      status: 'SENT',
-      notes: 'Invoice contoh untuk testing system',
-      items: {
-        create: [
-          {
-            name: 'Kitchen Set Minimalis',
-            specification: '3 meter, finishing HPL, include sink',
-            quantity: 1,
-            unit: 'Set',
-            unitPrice: 3500000,
-            total: 3500000,
-            sortOrder: 1
-          },
-          {
-            name: 'Granite Countertop',
-            specification: 'Granite hitam premium, ketebalan 3cm',
-            quantity: 3,
-            unit: 'M2',
-            unitPrice: 500000,
-            total: 1500000,
-            sortOrder: 2
-          }
-        ]
-      }
-    },
-    include: {
-      items: true
-    }
-  })
+  // Seed Users
+  console.log('👤 Seeding users...');
+  const users = await prisma.user.createMany({
+    data: [
+      {
+        email: 'admin@undagi.com',
+        name: 'Admin UNDAGI',
+        password: '$2a$10$example.hash.for.admin', // In real app, use proper bcrypt hash
+        role: 'SUPER_ADMIN',
+      },
+      {
+        email: 'operator@undagi.com',
+        name: 'Operator',
+        password: '$2a$10$example.hash.for.operator',
+        role: 'ADMIN',
+      },
+      {
+        email: 'user@undagi.com',
+        name: 'Regular User',
+        password: '$2a$10$example.hash.for.user',
+        role: 'USER',
+      },
+    ],
+  });
 
   // Seed Banners
-  console.log('Seeding banners...')
-  await prisma.banner.createMany({
+  console.log('🎯 Seeding banners...');
+  const banners = await prisma.banner.createMany({
     data: [
       {
-        title: "Renovasi Dapur Modern",
-        subtitle: "Desain Contemporary & Minimalis",
-        description: "Transformasi dapur Anda dengan desain modern yang menggabungkan fungsi dan estetika terkini",
-        image: "https://images.unsplash.com/photo-1556912167-f556f1f39fdf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-        price: "Mulai dari Rp 25 juta",
-        rating: 4.9,
-        features: ["Kitchen Set Custom", "Granite Countertop", "Built-in Appliances", "LED Lighting"],
-        badge: "Paling Populer",
-        isActive: true
-      },
-      {
-        title: "Renovasi Dapur Klasik",
-        subtitle: "Elegant & Timeless Design",
-        description: "Ciptakan suasana hangat dan elegan dengan sentuhan klasik yang tak lekang waktu",
-        image: "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-        price: "Mulai dari Rp 30 juta",
+        title: 'Solusi Konstruksi Terpercaya',
+        subtitle: 'Katalog Lengkap untuk Kebutuhan Proyek Anda',
+        description: 'Temukan berbagai produk berkualitas tinggi untuk mendukung proyek konstruksi dan renovasi Anda. Dari alat elektronik hingga furniture, semua tersedia dengan harga kompetitif.',
+        image: '/banners/hero-construction.jpg',
+        price: 'Mulai dari Rp 50.000',
         rating: 4.8,
-        features: ["Solid Wood Cabinet", "Marble Countertop", "Vintage Hardware", "Crown Molding"],
-        badge: "Premium",
-        isActive: true
+        features: ['Kualitas Terjamin', 'Harga Kompetitif', 'Pengiriman Cepat', 'Garansi Resmi'],
+        badge: 'Best Seller',
+        isActive: true,
       },
       {
-        title: "Renovasi Dapur Kompak",
-        subtitle: "Solusi untuk Ruang Terbatas",
-        description: "Maksimalkan fungsi dapur kecil dengan desain cerdas dan storage yang optimal",
-        image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-        price: "Mulai dari Rp 18 juta",
-        rating: 4.7,
-        features: ["Space Saving Design", "Multi-functional Storage", "Compact Appliances", "Smart Layout"],
-        badge: "Ekonomis",
-        isActive: true
-      }
-    ]
-  })
+        title: 'Promo Spesial Akhir Tahun',
+        subtitle: 'Diskon hingga 30% untuk Semua Kategori',
+        description: 'Jangan lewatkan kesempatan emas ini! Dapatkan diskon fantastis untuk semua produk di katalog kami.',
+        image: '/banners/promo-banner.jpg',
+        price: 'Hemat hingga Rp 500.000',
+        rating: 4.9,
+        features: ['Diskon 30%', 'Gratis Ongkir', 'Bonus Hadiah', 'Cicilan 0%'],
+        badge: 'Limited Time',
+        isActive: true,
+      },
+    ],
+  });
 
   // Seed Catalogues
-  console.log('Seeding catalogues...')
-  await prisma.catalogue.createMany({
+  console.log('📦 Seeding catalogues...');
+  const catalogues = await prisma.catalogue.createMany({
     data: [
+      // Elektronik
       {
         jenis: 'Elektronik',
-        namaBarang: 'Laptop Lenovo ThinkPad',
-        spesifikasi: 'Intel Core i5, 8GB RAM, 256GB SSD',
-        qty: 10,
+        namaBarang: 'Laptop Gaming ASUS ROG',
+        spesifikasi: 'Intel Core i7, RAM 16GB, SSD 1TB, RTX 3060',
+        qty: 25,
+        satuan: 'Unit',
+        hargaSatuan: 18500000,
+        jumlah: 462500000,
+        foto: '/products/laptop-asus-rog.jpg',
+      },
+      {
+        jenis: 'Elektronik',
+        namaBarang: 'Smartphone Samsung Galaxy S24',
+        spesifikasi: 'RAM 8GB, Storage 256GB, Camera 108MP',
+        qty: 50,
         satuan: 'Unit',
         hargaSatuan: 12000000,
-        jumlah: 120000000,
-        foto: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
+        jumlah: 600000000,
+        foto: '/products/samsung-s24.jpg',
       },
       {
         jenis: 'Elektronik',
-        namaBarang: 'Mouse Wireless Logitech',
-        spesifikasi: 'Optical, 2.4GHz, USB Receiver',
-        qty: 25,
-        satuan: 'Pcs',
-        hargaSatuan: 350000,
-        jumlah: 8750000,
-        foto: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop'
-      },
-      {
-        jenis: 'Furniture',
-        namaBarang: 'Meja Kerja Kayu',
-        spesifikasi: '120x60x75 cm, Kayu Jati',
-        qty: 5,
-        satuan: 'Unit',
-        hargaSatuan: 2500000,
-        jumlah: 12500000,
-        foto: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
-      },
-      {
-        jenis: 'Furniture',
-        namaBarang: 'Kursi Kantor Ergonomis',
-        spesifikasi: 'Adjustable Height, Mesh Back',
+        namaBarang: 'Monitor LG UltraWide 34"',
+        spesifikasi: '3440x1440, IPS Panel, 144Hz, HDR10',
         qty: 15,
         satuan: 'Unit',
-        hargaSatuan: 1800000,
-        jumlah: 27000000,
-        foto: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop'
+        hargaSatuan: 8500000,
+        jumlah: 127500000,
+        foto: '/products/lg-ultrawide.jpg',
       },
+      
+      // Furniture
       {
-        jenis: 'ATK',
-        namaBarang: 'Kertas A4 70gsm',
-        spesifikasi: 'White Paper, 500 sheets/ream',
-        qty: 50,
-        satuan: 'Rim',
-        hargaSatuan: 55000,
-        jumlah: 2750000,
-        foto: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop'
-      },
-      {
-        jenis: 'ATK',
-        namaBarang: 'Pulpen Pilot',
-        spesifikasi: 'Blue Ink, 0.7mm tip',
-        qty: 100,
-        satuan: 'Pcs',
-        hargaSatuan: 3500,
-        jumlah: 350000,
-        foto: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop'
-      },
-      {
-        jenis: 'Elektronik',
-        namaBarang: 'Monitor LED 24 inch',
-        spesifikasi: 'Full HD 1920x1080, IPS Panel',
-        qty: 8,
+        jenis: 'Furniture',
+        namaBarang: 'Meja Kerja Ergonomis',
+        spesifikasi: 'Bahan kayu jati, tinggi adjustable, lebar 120cm',
+        qty: 30,
         satuan: 'Unit',
-        hargaSatuan: 2200000,
-        jumlah: 17600000,
-        foto: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&h=300&fit=crop'
+        hargaSatuan: 2500000,
+        jumlah: 75000000,
+        foto: '/products/meja-kerja.jpg',
+      },
+      {
+        jenis: 'Furniture',
+        namaBarang: 'Kursi Gaming DXRacer',
+        spesifikasi: 'Ergonomic design, PU leather, lumbar support',
+        qty: 40,
+        satuan: 'Unit',
+        hargaSatuan: 3200000,
+        jumlah: 128000000,
+        foto: '/products/kursi-gaming.jpg',
       },
       {
         jenis: 'Furniture',
         namaBarang: 'Lemari Arsip 4 Laci',
-        spesifikasi: '40x60x132 cm, Besi dengan Powder Coating',
-        qty: 3,
+        spesifikasi: 'Besi tebal, sistem kunci, anti karat',
+        qty: 20,
         satuan: 'Unit',
-        hargaSatuan: 3200000,
-        jumlah: 9600000,
-        foto: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
-      }
-    ]
-  })
+        hargaSatuan: 1800000,
+        jumlah: 36000000,
+        foto: '/products/lemari-arsip.jpg',
+      },
 
-  // Seed default admin user
-  console.log('Seeding admin user...')
-  await prisma.user.create({
-    data: {
-      email: 'admin@undagi.com',
-      name: 'Admin UNDAGI',
-      password: '$2a$10$YourHashedPasswordHere', // You should hash this properly
-      role: 'ADMIN'
-    }
-  })
+      // ATK (Alat Tulis Kantor)
+      {
+        jenis: 'ATK',
+        namaBarang: 'Kertas A4 80gsm',
+        spesifikasi: 'Kertas putih berkualitas tinggi, 500 lembar per rim',
+        qty: 100,
+        satuan: 'Rim',
+        hargaSatuan: 65000,
+        jumlah: 6500000,
+        foto: '/products/kertas-a4.jpg',
+      },
+      {
+        jenis: 'ATK',
+        namaBarang: 'Pulpen Pilot G2',
+        spesifikasi: 'Tinta gel hitam, grip nyaman, retractable',
+        qty: 500,
+        satuan: 'Pcs',
+        hargaSatuan: 15000,
+        jumlah: 7500000,
+        foto: '/products/pulpen-pilot.jpg',
+      },
+      {
+        jenis: 'ATK',
+        namaBarang: 'Stapler Joyko HD-50',
+        spesifikasi: 'Heavy duty, kapasitas 50 lembar, anti jam',
+        qty: 75,
+        satuan: 'Unit',
+        hargaSatuan: 85000,
+        jumlah: 6375000,
+        foto: '/products/stapler-joyko.jpg',
+      },
 
-  // Seed some default settings
-  console.log('Seeding settings...')
-  await prisma.setting.createMany({
+      // Alat Konstruksi
+      {
+        jenis: 'Alat Konstruksi',
+        namaBarang: 'Bor Listrik Bosch GSB 550',
+        spesifikasi: '550W, Chuck 13mm, Hammer function',
+        qty: 35,
+        satuan: 'Unit',
+        hargaSatuan: 1200000,
+        jumlah: 42000000,
+        foto: '/products/bor-bosch.jpg',
+      },
+      {
+        jenis: 'Alat Konstruksi',
+        namaBarang: 'Gergaji Mesin Circular Makita',
+        spesifikasi: '1200W, blade 185mm, laser guide',
+        qty: 20,
+        satuan: 'Unit',
+        hargaSatuan: 2800000,
+        jumlah: 56000000,
+        foto: '/products/gergaji-makita.jpg',
+      },
+      {
+        jenis: 'Alat Konstruksi',
+        namaBarang: 'Tang Kombinasi Stanley',
+        spesifikasi: '8 inch, chrome vanadium steel, comfort grip',
+        qty: 60,
+        satuan: 'Pcs',
+        hargaSatuan: 150000,
+        jumlah: 9000000,
+        foto: '/products/tang-stanley.jpg',
+      },
+    ],
+  });
+
+  // Get created records for foreign keys
+  const companyRecords = await prisma.company.findMany();
+  const customerRecords = await prisma.customer.findMany();
+  const catalogueRecords = await prisma.catalogue.findMany();
+
+  // Seed Settings
+  console.log('⚙️ Seeding settings...');
+  const settings = await prisma.setting.createMany({
     data: [
       {
         key: 'site_name',
         value: 'UNDAGI Katalog',
-        description: 'Nama website'
+        description: 'Nama website',
       },
       {
         key: 'site_description',
-        value: 'Platform katalog produk UNDAGI',
-        description: 'Deskripsi website'
+        value: 'Platform katalog produk untuk kebutuhan konstruksi dan kantor',
+        description: 'Deskripsi website',
       },
       {
         key: 'contact_email',
         value: 'info@undagi.com',
-        description: 'Email kontak'
+        description: 'Email kontak utama',
       },
       {
         key: 'contact_phone',
-        value: '+62 XXX XXXX XXXX',
-        description: 'Nomor telepon kontak'
-      }
-    ]
-  })
+        value: '+62 21 1234 5678',
+        description: 'Nomor telepon kontak',
+      },
+      {
+        key: 'whatsapp_number',
+        value: '6281234567890',
+        description: 'Nomor WhatsApp untuk floating button',
+      },
+      {
+        key: 'invoice_prefix',
+        value: 'INV',
+        description: 'Prefix untuk nomor invoice',
+      },
+      {
+        key: 'default_tax_rate',
+        value: '11',
+        description: 'Rate pajak default (PPN 11%)',
+      },
+    ],
+  });
 
-  console.log('✅ Seed completed successfully!')
+  // Seed Sample Invoices
+  console.log('📄 Seeding sample invoices...');
+  const invoices = await prisma.invoice.createMany({
+    data: [
+      {
+        invoiceNumber: 'INV-2025-001',
+        companyId: companyRecords[0].id,
+        customerId: customerRecords[0].id,
+        date: new Date('2025-01-15'),
+        dueDate: new Date('2025-02-14'),
+        subtotal: 21000000,
+        tax: 2310000,
+        serviceCharge: 0,
+        total: 23310000,
+        status: 'SENT',
+        notes: 'Pembayaran dapat dilakukan melalui transfer bank',
+      },
+      {
+        invoiceNumber: 'INV-2025-002',
+        companyId: companyRecords[0].id,
+        customerId: customerRecords[1].id,
+        date: new Date('2025-01-20'),
+        dueDate: new Date('2025-02-19'),
+        subtotal: 5700000,
+        tax: 627000,
+        serviceCharge: 100000,
+        total: 6427000,
+        status: 'PAID',
+        notes: 'Terima kasih atas pembayaran yang tepat waktu',
+      },
+    ],
+  });
+
+  // Get invoice records for invoice items
+  const invoiceRecords = await prisma.invoice.findMany();
+
+  // Seed Invoice Items
+  console.log('📋 Seeding invoice items...');
+  await prisma.invoiceItem.createMany({
+    data: [
+      // Items for first invoice
+      {
+        invoiceId: invoiceRecords[0].id,
+        name: 'Laptop Gaming ASUS ROG',
+        specification: 'Intel Core i7, RAM 16GB, SSD 1TB, RTX 3060',
+        quantity: 1,
+        unit: 'Unit',
+        unitPrice: 18500000,
+        total: 18500000,
+        sortOrder: 1,
+      },
+      {
+        invoiceId: invoiceRecords[0].id,
+        name: 'Meja Kerja Ergonomis',
+        specification: 'Bahan kayu jati, tinggi adjustable, lebar 120cm',
+        quantity: 1,
+        unit: 'Unit',
+        unitPrice: 2500000,
+        total: 2500000,
+        sortOrder: 2,
+      },
+      // Items for second invoice
+      {
+        invoiceId: invoiceRecords[1].id,
+        name: 'Kursi Gaming DXRacer',
+        specification: 'Ergonomic design, PU leather, lumbar support',
+        quantity: 1,
+        unit: 'Unit',
+        unitPrice: 3200000,
+        total: 3200000,
+        sortOrder: 1,
+      },
+      {
+        invoiceId: invoiceRecords[1].id,
+        name: 'Monitor LG UltraWide 34"',
+        specification: '3440x1440, IPS Panel, 144Hz, HDR10',
+        quantity: 1,
+        unit: 'Unit',
+        unitPrice: 2500000,
+        total: 2500000,
+        sortOrder: 2,
+      },
+    ],
+  });
+
+  console.log('✅ Database seeding completed successfully!');
+  console.log('📊 Summary:');
+  console.log(`   - Companies: ${companyRecords.length}`);
+  console.log(`   - Customers: ${customerRecords.length}`);
+  console.log(`   - Catalogues: ${catalogueRecords.length}`);
+  console.log(`   - Invoices: ${invoiceRecords.length}`);
+  console.log(`   - Banners: 2`);
+  console.log(`   - Users: 3`);
+  console.log(`   - Settings: 7`);
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:')
-    console.error(e)
-    process.exit(1)
+    console.error('❌ Error during seeding:', e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

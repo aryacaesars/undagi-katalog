@@ -69,7 +69,9 @@ export default function InvoiceGenerator({ data }) {
       address: 'Alamat tidak tersedia',
       phone: 'Telepon tidak tersedia',
       email: 'Email tidak tersedia',
-      logo: '/Logo.svg'
+      logo: '/Logo.svg',
+      signature: '/ttd.png',
+      authorizedBy: 'Direktur'
     },
     customer: data.customer || {
       name: 'Customer tidak tersedia',
@@ -87,22 +89,81 @@ export default function InvoiceGenerator({ data }) {
   }
 
   return (
-    <Card className="w-full bg-white shadow-lg print-container">
-      <CardContent className="p-8 print-avoid-break">
+    <>
+      <style jsx global>{`
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+          
+          @page {
+            margin: 0.5in;
+            size: A4;
+          }
+          
+          .print-container {
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+            width: 100% !important;
+            page-break-before: avoid !important;
+          }
+          
+          .print-avoid-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          .signature-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-top: auto;
+          }
+          
+          .items-table {
+            page-break-inside: auto;
+          }
+          
+          .terms-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-top: 1rem;
+          }
+          
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          html, body {
+            height: auto !important;
+          }
+          
+          .no-print {
+            display: none !important;
+          }
+          
+          /* Pastikan header tidak terpotong */
+          .invoice-header {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          
+          /* Pastikan summary tidak terpotong */
+          .invoice-summary {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+        }
+      `}</style>
+      <Card className="w-full bg-white shadow-lg print-container">
+        <CardContent className="p-8">
+        <div className="print-content">
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-6 invoice-header">
           <div className="flex items-center gap-6">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Image
-                src={invoiceData.company.logo || "/Logo.svg"}
-                alt={`${invoiceData.company.name} Logo`}
-                width={80}
-                height={80}
-                className="object-contain"
-              />
-            </div>
-            
             <div>
               <h1 className="text-2xl font-bold text-red-600 mb-1">INVOICE</h1>
               <div className="space-y-1 text-sm text-gray-600">
@@ -122,25 +183,60 @@ export default function InvoiceGenerator({ data }) {
             </div>
           </div>
           
-          {/* Company Info */}
+          {/* Company Info dengan Logo */}
           <div className="text-right">
+            {/* Logo */}
+            <div className="flex justify-end mb-3">
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <Image
+                    src={invoiceData.company.logo || "/Logo.svg"}
+                    alt={`${invoiceData.company.name} Logo`}
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                    priority
+                    unoptimized
+                    onError={(e) => {
+                      console.error('Error loading logo:', e);
+                      // Hide the Image component and show fallback
+                      e.target.style.display = 'none';
+                      const fallback = e.target.nextElementSibling;
+                      if (fallback) fallback.style.display = 'block';
+                    }}
+                  />
+                  {/* Fallback image */}
+                  <img
+                    src="/Logo.svg"
+                    alt={`${invoiceData.company.name} Logo`}
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                    style={{ display: 'none' }}
+                    onError={(e) => {
+                      console.error('Fallback image also failed to load');
+                      e.target.style.display = 'none';
+                      // Show placeholder text
+                      const placeholder = e.target.nextElementSibling;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  {/* Text placeholder as last resort */}
+                  <div 
+                    className="w-20 h-20 bg-gray-200 border-2 border-dashed border-gray-400 flex items-center justify-center text-xs text-gray-500 text-center"
+                    style={{ display: 'none' }}
+                  >
+                    Logo<br/>Tidak<br/>Tersedia
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <h2 className="text-xl font-bold text-gray-900 mb-2">{invoiceData.company.name}</h2>
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex items-center justify-end gap-2">
                 <MapPin className="w-3 h-3" />
                 <span>{invoiceData.company.address}</span>
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <Phone className="w-3 h-3" />
-                <span>{invoiceData.company.phone}</span>
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <Mail className="w-3 h-3" />
-                <span>{invoiceData.company.email}</span>
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <Globe className="w-3 h-3" />
-                <span>{invoiceData.company.website}</span>
               </div>
             </div>
           </div>
@@ -175,7 +271,7 @@ export default function InvoiceGenerator({ data }) {
         </div>
 
         {/* Items Table */}
-        <div className="mb-4 print-avoid-break">
+        <div className="mb-4 items-table">
           <h3 className="text-base font-semibold text-gray-900 mb-3">Detail Pemesanan</h3>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-200">
@@ -235,7 +331,7 @@ export default function InvoiceGenerator({ data }) {
           </div>
         </div>
                   
-          <div>
+          <div className="invoice-summary">
             <h3 className="text-base font-semibold text-gray-900 mb-2">Invoice Summary</h3>
             <div className="bg-red-50 p-3 rounded-lg border border-red-200">
               <div className="space-y-1.5">
@@ -261,7 +357,7 @@ export default function InvoiceGenerator({ data }) {
           </div>
 
         {/* Terms and Conditions */}
-        <div className="border-t border-gray-200 pt-3">
+        <div className="border-t border-gray-200 pt-3 terms-section signature-section">
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Syarat & Ketentuan</h3>
           <div className="grid md:grid-cols-2 gap-4 text-xs text-gray-600">
             <div>
@@ -272,17 +368,43 @@ export default function InvoiceGenerator({ data }) {
                 <li>Konfirmasi pembayaran wajib disertakan</li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-1">Layanan:</h4>
-              <ul className="space-y-0.5 list-disc list-inside">
-                <li>Service charge mencakup survey, pengiriman & inspeksi</li>
-                <li>Garansi sesuai dengan standar industri</li>
-                <li>Support teknis tersedia 24/7</li>
-              </ul>
+            
+            {/* Tanda Tangan */}
+            <div className="flex flex-col items-end justify-end">
+              <div className="text-center">
+                <h4 className="font-semibold text-gray-900 mb-2 text-xs">Tanda Tangan:</h4>
+                <div className="w-32 h-16 flex items-center justify-center mb-2">
+                  <Image
+                    src={invoiceData.company.signature || "/ttd.png"}
+                    alt="Tanda Tangan"
+                    width={120}
+                    height={50}
+                    className="object-contain"
+                    unoptimized
+                    onError={(e) => {
+                      console.error('Error loading signature:', e);
+                      e.target.style.display = 'none';
+                      const placeholder = e.target.parentElement.querySelector('.signature-placeholder');
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  <div 
+                    className="signature-placeholder w-30 h-12 bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-400"
+                    style={{ display: 'none' }}
+                  >
+                    TTD
+                  </div>
+                </div>
+                <div className="border-t border-gray-400 w-32 mx-auto mb-1"></div>
+                <p className="font-semibold text-gray-900 text-xs">{invoiceData.company.authorizedBy || 'Direktur'}</p>
+                <p className="text-gray-600 text-xs">{invoiceData.company.name}</p>
+              </div>
             </div>
           </div>
         </div>
+        </div>
       </CardContent>
     </Card>
+    </>
   )
 }
