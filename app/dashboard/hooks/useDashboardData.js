@@ -144,6 +144,31 @@ export function useDashboardData() {
     }
   }
 
+  // Update invoice counter
+  const updateInvoiceCounterHandler = async (newCounter) => {
+    try {
+      setIsSubmitting(true)
+      const response = await fetch('/api/invoices/last-number', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ counter: newCounter })
+      })
+
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || 'Gagal memperbarui nomor invoice')
+      }
+
+      setInvoiceCounterState(newCounter)
+      alert('Nomor invoice berhasil diperbarui!')
+    } catch (error) {
+      console.error('Error updating invoice counter:', error)
+      alert(`Gagal memperbarui nomor invoice: ${error.message}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   // Save company data
   const saveCompanySettings = async () => {
     try {
@@ -200,14 +225,13 @@ export function useDashboardData() {
           throw new Error(result.error || 'Failed to create company')
         }
         
-        setCompanyData(prev => ({ ...prev, id: result.data.id, ...result.data }))
+        setCompanyData(prev => ({ ...prev, ...result.data }))
       }
       
-      alert('Data perusahaan berhasil disimpan!')
-      setIsEditingCompany(false)
+      await saveCompanyData(companyData) // For compatibility
       
-      // Reload settings to get updated data
-      await loadInvoiceSettings()
+      setIsEditingCompany(false)
+      alert('Pengaturan perusahaan berhasil disimpan!')
     } catch (error) {
       console.error('Error saving company data:', error)
       alert('Gagal menyimpan data perusahaan: ' + error.message)
@@ -216,24 +240,10 @@ export function useDashboardData() {
     }
   }
 
-  // Update invoice counter
-  const updateInvoiceCounterHandler = async (newCounter) => {
-    try {
-      setInvoiceCounterState(newCounter)
-      alert(`Nomor invoice berikutnya akan dimulai dari ${newCounter}!`)
-    } catch (error) {
-      console.error('Error updating invoice counter:', error)
-      alert('Gagal mengupdate nomor invoice')
-    }
-  }
-
   // Handle company data input change
   const handleCompanyInputChange = (e) => {
     const { name, value } = e.target
-    setCompanyData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setCompanyData(prev => ({ ...prev, [name]: value }))
   }
 
   return {

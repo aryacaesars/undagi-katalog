@@ -2,16 +2,24 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, ArrowRight } from 'lucide-react'
-import React from 'react'
+import { Plus, ArrowRight, FileText, Eye } from 'lucide-react'
+import Link from 'next/link'
+import React, { useEffect } from 'react'
+import { useInvoices } from '@/lib/use-invoice'
 
-export default function DashboardGreeting() {
+function DashboardGreeting() {
   const currentHour = new Date().getHours()
   const getGreeting = () => {
     if (currentHour < 12) return "Good Morning"
     if (currentHour < 17) return "Good Afternoon"
     return "Good Evening"
   }
+
+  // Ambil 5 invoice terbaru yang sudah di-generate (status bukan DRAFT)
+  const { invoices, loading, error, fetchInvoices } = useInvoices()
+  useEffect(() => {
+    fetchInvoices({ page: 1, limit: 5, status: 'SENT' })
+  }, [])
 
   return (
     <div className="space-y-8">
@@ -57,29 +65,46 @@ export default function DashboardGreeting() {
         </CardContent>
       </Card>
 
-      {/* Stats Preview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-gray-900">0</div>
-            <div className="text-sm text-gray-500 mt-1">Projects</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-gray-900">0</div>
-            <div className="text-sm text-gray-500 mt-1">Tasks</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-gray-900">0</div>
-            <div className="text-sm text-gray-500 mt-1">Completed</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Invoice List Preview */}
+      <Card className="border-0 shadow-sm mt-8">
+        <CardContent className="p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-500" />
+            <span className="font-semibold text-gray-900">Invoice Terbaru (Sudah di-generate)</span>
+          </div>
+          {loading ? (
+            <div className="text-gray-500">Memuat invoice...</div>
+          ) : error ? (
+            <div className="text-red-500">Gagal memuat invoice</div>
+          ) : invoices.length === 0 ? (
+            <div className="text-gray-500">Belum ada invoice yang di-generate.</div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {invoices.map(inv => (
+                <li key={inv.id} className="py-2 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-gray-800">{inv.invoiceNumber}</span>
+                    <span className="ml-2 text-xs px-2 py-1 rounded bg-blue-50 text-blue-700">{inv.status}</span>
+                    <span className="ml-2 text-gray-500">{new Date(inv.createdAt).toLocaleDateString('id-ID')}</span>
+                  </div>
+                  <Link href={`/invoice/${inv.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-4 text-right">
+            <Link href="/invoice/list">
+              <Button variant="ghost" size="sm">Lihat Semua Invoice</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
+
+export default DashboardGreeting;

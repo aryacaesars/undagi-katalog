@@ -45,7 +45,8 @@ const formatDate = (date) => {
 
 export default function InvoiceListPage() {
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  // Default statusFilter ke 'SENT' agar hanya tampil invoice yang sudah di-generate
+  const [statusFilter, setStatusFilter] = useState('SENT')
   const [currentPage, setCurrentPage] = useState(1)
   
   const { 

@@ -239,7 +239,7 @@ export default function CompanySettings({
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium mb-2">Format Nomor Invoice</h4>
             <p className="text-sm text-gray-600">
-              Format: INV-YYYY (contoh: INV-0001, INV-0002, dst.)
+              Format: INV-XXXX (contoh: INV-0001, INV-0002, dst.)
             </p>
             <p className="text-sm text-gray-600 mt-1">
               Nomor akan otomatis bertambah setiap kali invoice baru dibuat.

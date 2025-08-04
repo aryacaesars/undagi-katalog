@@ -178,10 +178,55 @@ export default function InvoiceDetailPage() {
               </Button>
             )}
 
+
             {/* Print/Download - Available for both admin and user */}
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               {isUserView ? 'Download PDF' : 'Print/Save PDF'}
+            </Button>
+
+            {/* Konfirmasi via WhatsApp */}
+            <Button
+              type="button"
+              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded shadow flex items-center gap-2"
+              style={{ minWidth: 0 }}
+              onClick={async () => {
+                // Jika status masih DRAFT, update ke SENT dulu
+                if (invoice.status === 'DRAFT') {
+                  try {
+                    await updateInvoice(invoice.id, { status: 'SENT' });
+                  } catch (err) {
+                    console.error('Gagal update status invoice:', err);
+                  }
+                }
+                try {
+                  await fetch(`/api/invoices/${invoice.invoiceNumber}/confirm-wa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'MASUK', confirmedAt: new Date() })
+                  });
+                } catch (err) {
+                  console.error('Gagal mencatat konfirmasi invoice:', err);
+                }
+                // Compose WhatsApp message
+                const invoiceLink = `${window.location.origin}/invoice/${invoice.invoiceNumber}`;
+                const customerName = invoice.customer?.name || '';
+                const senderName = invoice.company?.authorizedBy || 'Admin';
+                const message =
+                  `Halo Admin,\n\nSaya (${customerName}) ingin mengkonfirmasi pembayaran untuk Invoice No: ${invoice.invoiceNumber}.\n\nBerikut link invoice: ${invoiceLink}`;
+                const encodedMessage = encodeURIComponent(message);
+                window.open(`https://wa.me/6289524396489?text=${encodedMessage}`, '_blank');
+                // Redirect ke beranda setelah klik tombol
+                setTimeout(() => {
+                  window.location.href = '/';
+                }, 500);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 12c0 4.556-3.694 8.25-8.25 8.25A8.212 8.212 0 0 1 4.5 18.2l-1.2 3.05a.75.75 0 0 1-.97.43.75.75 0 0 1-.43-.97l1.2-3.05A8.25 8.25 0 1 1 20.25 12Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 10.125c.375 1.125 1.5 2.25 2.625 2.625m0 0c.375.375 1.125.375 1.5 0l.75-.75c.375-.375.375-1.125 0-1.5l-.75-.75c-.375-.375-1.125-.375-1.5 0l-.75.75c-.375.375-.375 1.125 0 1.5Z" />
+              </svg>
+              Konfirmasi via WhatsApp
             </Button>
             
             {/* Edit and Delete - Only for admin view */}

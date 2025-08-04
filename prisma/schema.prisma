@@ -147,16 +147,17 @@ enum OrderStatus {
 
 // Model untuk Company/Perusahaan (untuk invoice header)
 model Company {
-  id        Int      @id @default(autoincrement())
-  name      String
-  address   String
-  phone     String
-  email     String
-  website   String?
-  logo      String?  // URL to logo image
-  isDefault Boolean  @default(false) // Mark default company for invoices
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  name           String
+  address        String
+  phone          String
+  email          String
+  website        String?
+  logo           String? // URL to logo image
+  isDefault      Boolean  @default(false) // Mark default company for invoices
+  invoiceCounter Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relasi balik
   invoices  Invoice[]

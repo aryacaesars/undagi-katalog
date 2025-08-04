@@ -49,6 +49,22 @@ const formatDate = (date) => {
 }
 
 export default function InvoiceGenerator({ data }) {
+  // Fungsi konfirmasi via WhatsApp
+  const handleWhatsappConfirm = async () => {
+    // Kirim request ke backend untuk update status invoice
+    try {
+      await fetch(`/api/invoices/${invoiceData.invoiceNumber}/confirm-wa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'MASUK', confirmedAt: new Date() })
+      });
+    } catch (err) {
+      // Optional: tampilkan error jika perlu
+      console.error('Gagal mencatat konfirmasi invoice:', err);
+    }
+    // Redirect ke WhatsApp
+    window.open('https://wa.me/6289524396489?text=Halo%2C%20saya%20ingin%20mengkonfirmasi%20invoice%20ini.', '_blank');
+  };
   if (!data) {
     console.log('InvoiceGenerator: No data provided')
     return null
@@ -60,10 +76,13 @@ export default function InvoiceGenerator({ data }) {
   console.log('DueDate value:', data.dueDate, 'Type:', typeof data.dueDate)
 
   // Ensure we have required data with defaults
+  const invoiceDate = data.date ? new Date(data.date) : new Date();
+  const dueDate = new Date(invoiceDate);
+  dueDate.setDate(invoiceDate.getDate() + 7);
   const invoiceData = {
-    invoiceNumber: data.invoiceNumber || 'INV-000001',
-    date: data.date || new Date(),
-    dueDate: data.dueDate || new Date(),
+    invoiceNumber: data.invoiceNumber || `INV-${String(data.company?.invoiceCounter || 1).padStart(4, '0')}`,
+    date: invoiceDate,
+    dueDate: dueDate,
     company: data.company || {
       name: 'UNDAGI',
       address: 'Alamat tidak tersedia',
@@ -235,7 +254,6 @@ export default function InvoiceGenerator({ data }) {
             <h2 className="text-xl font-bold text-gray-900 mb-2">{invoiceData.company.name}</h2>
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex items-center justify-end gap-2">
-                <MapPin className="w-3 h-3" />
                 <span>{invoiceData.company.address}</span>
               </div>
             </div>
@@ -365,7 +383,7 @@ export default function InvoiceGenerator({ data }) {
               <div className="text-xs text-gray-600">
                 <h4 className="font-semibold text-gray-900 mb-1">Pembayaran:</h4>
                 <ul className="space-y-0.5 list-disc list-inside">
-                  <li>Pembayaran dilakukan dalam 30 hari setelah invoice diterbitkan.</li>
+                  <li>Pembayaran dilakukan dalam 7 hari setelah invoice diterbitkan.</li>
                   <li>Transfer ke rekening yang tertera.</li>
                   <li>Konfirmasi pembayaran wajib disertakan.</li>
                 </ul>
@@ -380,9 +398,9 @@ export default function InvoiceGenerator({ data }) {
                   <Image
                     src={invoiceData.company.signature || "/ttd.png"}
                     alt="Tanda Tangan"
-                    width={120}
-                    height={50}
-                    className="object-contain"
+                    width={100}
+                    height={30}
+                    className="object-fit"
                     unoptimized
                     onError={(e) => {
                       console.error('Error loading signature:', e);
@@ -399,8 +417,8 @@ export default function InvoiceGenerator({ data }) {
                   </div>
                 </div>
                 <div className="border-t border-gray-400 w-32 mx-auto mb-1"></div>
-                <p className="font-semibold text-gray-900 text-xs">{invoiceData.company.authorizedBy || 'Direktur'}</p>
-                <p className="text-gray-600 text-xs">{invoiceData.company.name}</p>
+                <p className="font-semibold text-gray-900 text-xs">{invoiceData.company.authorizedBy || 'Direktur Keuangan'}</p>
+                <p className="text-gray-600 text-xs">Nia Dewi Anisa</p>
               </div>
             </div>
           </div>
