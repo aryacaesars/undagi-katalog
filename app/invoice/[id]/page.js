@@ -200,7 +200,7 @@ export default function InvoiceDetailPage() {
                   }
                 }
                 try {
-                  await fetch(`/api/invoices/${invoice.invoiceNumber}/confirm-wa`, {
+                  await fetch(`/api/invoices/${invoice.id}/confirm-wa`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: 'MASUK', confirmedAt: new Date() })
@@ -209,7 +209,7 @@ export default function InvoiceDetailPage() {
                   console.error('Gagal mencatat konfirmasi invoice:', err);
                 }
                 // Compose WhatsApp message
-                const invoiceLink = `${window.location.origin}/invoice/${invoice.invoiceNumber}`;
+                const invoiceLink = `${window.location.origin}/invoice/${invoice.id}`;
                 const customerName = invoice.customer?.name || '';
                 const senderName = invoice.company?.authorizedBy || 'Admin';
                 const message =
