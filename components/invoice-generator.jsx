@@ -356,23 +356,26 @@ export default function InvoiceGenerator({ data }) {
             </div>
           </div>
 
-        {/* Terms and Conditions */}
-        <div className="border-t border-gray-200 pt-3 terms-section signature-section">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Syarat & Ketentuan</h3>
-          <div className="grid md:grid-cols-2 gap-4 text-xs text-gray-600">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-1">Pembayaran:</h4>
-              <ul className="space-y-0.5 list-disc list-inside">
-                <li>Pembayaran dilakukan dalam 30 hari setelah invoice diterbitkan</li>
-                <li>Transfer ke rekening yang tertera</li>
-                <li>Konfirmasi pembayaran wajib disertakan</li>
-              </ul>
+        {/* Terms and Signature */}
+        <div className="border-t border-gray-200 pt-4 mt-4 signature-section">
+          <div className="flex justify-between items-start">
+            {/* Terms & Conditions (Left) */}
+            <div className="w-1/2 pr-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Syarat & Ketentuan</h3>
+              <div className="text-xs text-gray-600">
+                <h4 className="font-semibold text-gray-900 mb-1">Pembayaran:</h4>
+                <ul className="space-y-0.5 list-disc list-inside">
+                  <li>Pembayaran dilakukan dalam 30 hari setelah invoice diterbitkan.</li>
+                  <li>Transfer ke rekening yang tertera.</li>
+                  <li>Konfirmasi pembayaran wajib disertakan.</li>
+                </ul>
+              </div>
             </div>
-            
-            {/* Tanda Tangan */}
-            <div className="flex flex-col items-end justify-end">
+
+            {/* Signature (Right) */}
+            <div className="w-1/2 flex justify-end">
               <div className="text-center">
-                <h4 className="font-semibold text-gray-900 mb-2 text-xs">Tanda Tangan:</h4>
+                <h4 className="font-semibold text-gray-900 mb-2 text-xs">Hormat Kami,</h4>
                 <div className="w-32 h-16 flex items-center justify-center mb-2">
                   <Image
                     src={invoiceData.company.signature || "/ttd.png"}
