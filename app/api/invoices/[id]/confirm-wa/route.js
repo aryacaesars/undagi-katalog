@@ -3,15 +3,14 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request, { params }) {
   try {
-    const { invoiceNumber } = params;
-    const { status, confirmedAt } = await request.json();
+    const { id } = params;
+    const { status } = await request.json();
 
-    // Update invoice status and confirmation date
+    // Update invoice status using ID
     const updated = await prisma.invoice.update({
-      where: { invoiceNumber },
+      where: { id: parseInt(id) },
       data: {
-        status: 'CONFIRMED_WA',
-        confirmedAt: confirmedAt ? new Date(confirmedAt) : new Date()
+        status: 'SENT'
       }
     });
 
