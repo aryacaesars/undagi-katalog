@@ -2,9 +2,9 @@ export async function GET() {
   const baseUrl = 'https://katalog.undagicorp.com'
   
   // Static pages
+  // List ONLY public facing static pages (exclude /dashboard which is private/admin)
   const staticPages = [
     '',
-    '/dashboard',
     '/keranjang'
   ]
   

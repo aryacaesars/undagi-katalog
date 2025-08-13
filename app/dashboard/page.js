@@ -48,7 +48,33 @@ const DashboardGreeting = () => (
   </div>
 )
 
+// Fallback client-side meta tag insertion (in case of cached older HTML)
+function useRobotsNoIndex() {
+  useEffect(() => {
+    const name = 'robots'
+    const desired = 'noindex,nofollow,noarchive,noimageindex'
+    let tag = document.querySelector(`meta[name="${name}"]`)
+    if (!tag) {
+      tag = document.createElement('meta')
+      tag.name = name
+      tag.content = desired
+      document.head.appendChild(tag)
+    } else if (!tag.content.includes('noindex')) {
+      tag.content = desired
+    }
+    // Also set X-Robots-Tag via a meta equivalent (some scrapers read it)
+    let xrobots = document.querySelector('meta[name="x-robots-tag"]')
+    if (!xrobots) {
+      xrobots = document.createElement('meta')
+      xrobots.name = 'x-robots-tag'
+      xrobots.content = desired
+      document.head.appendChild(xrobots)
+    }
+  }, [])
+}
+
 export default function Dashboard() {
+  useRobotsNoIndex()
   // Custom hooks
   const { sidebarOpen, setSidebarOpen, activeTab, setActiveTab } = useNavigation()
   const {
