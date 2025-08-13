@@ -1,11 +1,12 @@
 
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { catalogueApi } from '@/lib/api'
 import { useCartDB } from '@/lib/cart-db'
@@ -31,6 +32,11 @@ export default function Catalogue() {
   const router = useRouter()
   const { addToCart, loading: cartLoading } = useCartDB()
   const [selectedCategory, setSelectedCategory] = useState('Semua')
+  const [search, setSearch] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [highlightIndex, setHighlightIndex] = useState(-1)
+  const suggestionsRef = useRef(null)
+  const inputRef = useRef(null)
   const [catalogueData, setCatalogueData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -104,13 +110,113 @@ export default function Catalogue() {
     return ['Semua', ...uniqueCategories]
   }, [catalogueData])
 
-  // Filter data based on selected category
+  // Filter data based on selected category + search text
   const filteredData = useMemo(() => {
-    if (selectedCategory === 'Semua') {
-      return catalogueData
+    let data = selectedCategory === 'Semua'
+      ? catalogueData
+      : catalogueData.filter(item => item.jenis === selectedCategory)
+
+    if (search.trim()) {
+      const kw = search.toLowerCase()
+      data = data.filter(item =>
+        (item.namaBarang && item.namaBarang.toLowerCase().includes(kw)) ||
+        (item.spesifikasi && item.spesifikasi.toLowerCase().includes(kw))
+      )
     }
-    return catalogueData.filter(item => item.jenis === selectedCategory)
-  }, [selectedCategory, catalogueData])
+    return data
+  }, [selectedCategory, search, catalogueData])
+
+  // Build suggestions (client-side) berdasarkan namaBarang
+  const suggestions = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (q.length < 2) return []
+    // Skoring sederhana: prioritas yang diawali query kemudian yang mengandung.
+    const scored = []
+    const seen = new Set()
+    for (const item of catalogueData) {
+      if (!item?.namaBarang) continue
+      const name = item.namaBarang
+      const lower = name.toLowerCase()
+      if (lower.includes(q)) {
+        let score = 0
+        if (lower.startsWith(q)) score += 50
+        // Bonus untuk kedekatan posisi substring
+        score += Math.max(0, 30 - lower.indexOf(q))
+        // Bonus panjang kecocokan relatif
+        score += Math.min(q.length / lower.length * 20, 20)
+        // Fuzzy sederhana: huruf-huruf berurutan (subsequence) -> sudah tercakup includes, bisa tambah kecil
+        scored.push({ item, score })
+      } else {
+        // Attempt loose subsequence match (q chars appear in order)
+        let i = 0
+        for (const ch of lower) {
+          if (ch === q[i]) i++
+          if (i === q.length) break
+        }
+        if (i === q.length) {
+          const score = 10 // low score for subsequence only
+          scored.push({ item, score })
+        }
+      }
+    }
+    scored.sort((a,b) => b.score - a.score)
+    for (const s of scored) {
+      if (!seen.has(s.item.namaBarang.toLowerCase())) {
+        seen.add(s.item.namaBarang.toLowerCase())
+      }
+    }
+    // Kembalikan unik maksimal 8
+    const unique = []
+    const added = new Set()
+    for (const s of scored) {
+      const key = s.item.namaBarang.toLowerCase()
+      if (!added.has(key)) {
+        unique.push(s.item)
+        added.add(key)
+      }
+      if (unique.length === 8) break
+    }
+    return unique
+  }, [search, catalogueData])
+
+  // Close suggestions ketika klik di luar
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target) && inputRef.current && !inputRef.current.contains(e.target)) {
+        setShowSuggestions(false)
+        setHighlightIndex(-1)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const applySuggestion = (name) => {
+    setSearch(name)
+    setShowSuggestions(false)
+    setHighlightIndex(-1)
+  }
+
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || suggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlightIndex(prev => (prev + 1) % suggestions.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightIndex(prev => (prev - 1 + suggestions.length) % suggestions.length)
+    } else if (e.key === 'Enter') {
+      if (highlightIndex >= 0 && highlightIndex < suggestions.length) {
+        e.preventDefault()
+        applySuggestion(suggestions[highlightIndex].namaBarang)
+      } else {
+        setShowSuggestions(false)
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false)
+      setHighlightIndex(-1)
+    }
+  }
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredData.length / itemsPerPage)
@@ -168,8 +274,8 @@ export default function Catalogue() {
         </p>
       </div>
 
-      {/* Category Filter */}
-      <div className="mb-8">
+      {/* Category Filter + Search */}
+      <div className="mb-8 space-y-4">
         <div className="flex flex-wrap gap-2 justify-center">
           {categories.map((category) => (
             <Button
@@ -182,6 +288,69 @@ export default function Catalogue() {
               {category}
             </Button>
           ))}
+        </div>
+        <div className="max-w-md mx-auto" ref={suggestionsRef}>
+          <div className="flex items-center gap-2 relative">
+            <Input
+              ref={inputRef}
+              placeholder="Cari nama atau spesifikasi barang..."
+              value={search}
+              onChange={(e) => {
+                const v = e.target.value
+                setSearch(v)
+                setShowSuggestions(v.trim().length >= 2)
+                setHighlightIndex(-1)
+              }}
+              onFocus={() => {
+                if (search.trim().length >= 2) setShowSuggestions(true)
+              }}
+              onKeyDown={handleKeyDown}
+              className="bg-white shadow-sm pr-10"
+            />
+            {search && (
+              <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setShowSuggestions(false); }} className="text-gray-500">
+                Reset
+              </Button>
+            )}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="absolute top-full left-0 right-0 mt-1 max-h-64 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg z-20 animate-in fade-in">
+                {suggestions.map((s, idx) => {
+                  const name = s.namaBarang || ''
+                  const q = search.trim().toLowerCase()
+                  // highlight match segment
+                  const lower = name.toLowerCase()
+                  const start = lower.indexOf(q)
+                  let before = name, match = '', after = ''
+                  if (start >= 0) {
+                    before = name.slice(0, start)
+                    match = name.slice(start, start + q.length)
+                    after = name.slice(start + q.length)
+                  }
+                  return (
+                    <li
+                      key={s.id + name}
+                      className={`px-3 py-2 text-sm cursor-pointer flex justify-between items-center ${idx === highlightIndex ? 'bg-red-600 text-white' : 'hover:bg-gray-100'}`}
+                      onMouseEnter={() => setHighlightIndex(idx)}
+                      onMouseLeave={() => setHighlightIndex(-1)}
+                      onClick={() => applySuggestion(name)}
+                    >
+                      <span>
+                        {start >= 0 ? (<>
+                          {before}<span className={idx === highlightIndex ? 'font-semibold' : 'font-semibold text-red-600'}>{match}</span>{after}
+                        </>) : name}
+                      </span>
+                      <span className="ml-3 text-[10px] uppercase tracking-wide text-gray-400 hidden md:inline">Klik / Enter</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+            {showSuggestions && suggestions.length === 0 && search.trim().length >= 2 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow p-3 text-sm text-gray-500 z-20">
+                Tidak ada saran
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -357,7 +526,11 @@ export default function Catalogue() {
       {filteredData.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            Tidak ada barang ditemukan untuk kategori "{selectedCategory}"
+            {search.trim() ? (
+              <>Tidak ada barang ditemukan untuk pencarian "{search}"{selectedCategory !== 'Semua' && ` pada kategori "${selectedCategory}"`}</>
+            ) : (
+              <>Tidak ada barang ditemukan untuk kategori "{selectedCategory}"</>
+            )}
           </p>
         </div>
       )}

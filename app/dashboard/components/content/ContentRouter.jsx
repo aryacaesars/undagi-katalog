@@ -26,7 +26,7 @@ export default function ContentRouter({
     case 'banner':
       return <BannerContent setIsAddingBanner={setIsAddingBanner} />
     case 'catalogue':
-      return <CatalogueContent />
+      return <CatalogueContent items={catalogueItems || []} />
     case 'pricing':
       return <PricingContent />
     case 'invoice':
